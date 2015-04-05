@@ -26,8 +26,16 @@ import (
 	"github.com/Thomasdezeeuw/ini"
 )
 
+var Production bool
+
 func main() {
-	c, err := ini.Load("development.ini") // or production
+	var c ini.Config
+	var err error
+	if Production {
+		c, err = ini.Load("production.ini")
+	} else {
+		c, err = ini.Load("development.ini")
+	}
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -55,8 +63,17 @@ func main() {
 Name = "My app"
 
 [HTTP]
-Url = "localhost"
+Url = localhost
 Port = 8000
+```
+
+```
+; production.ini
+Name = "My app"
+
+[HTTP]
+Url = example.com
+Port = 80
 ```
 
 ## License
