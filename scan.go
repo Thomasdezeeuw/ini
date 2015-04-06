@@ -3,6 +3,7 @@ package ini
 import (
 	"errors"
 	"fmt"
+	"math"
 	"reflect"
 	"strconv"
 	"strings"
@@ -91,7 +92,6 @@ func setSlice(f *reflect.Value, value string) error {
 	}
 
 	// todo: clean up switch
-	// todo: check for overflow with ints
 	switch f.Type().Elem().Kind() {
 	case reflect.String:
 		f.Set(reflect.ValueOf(values))
@@ -117,6 +117,8 @@ func setSlice(f *reflect.Value, value string) error {
 			i, err := strconv.Atoi(value)
 			if err != nil {
 				return err
+			} else if i > math.MaxInt8 || i < MinInt8 {
+				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
 			}
 			ints = append(ints, int8(i))
 		}
@@ -127,6 +129,8 @@ func setSlice(f *reflect.Value, value string) error {
 			i, err := strconv.Atoi(value)
 			if err != nil {
 				return err
+			} else if i > math.MaxInt16 || i < MinInt16 {
+				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
 			}
 			ints = append(ints, int16(i))
 		}
@@ -137,6 +141,8 @@ func setSlice(f *reflect.Value, value string) error {
 			i, err := strconv.Atoi(value)
 			if err != nil {
 				return err
+			} else if i > math.MaxInt32 || i < MinInt32 {
+				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
 			}
 			ints = append(ints, int32(i))
 		}
@@ -157,6 +163,8 @@ func setSlice(f *reflect.Value, value string) error {
 			i, err := strconv.Atoi(value)
 			if err != nil {
 				return err
+			} else if i < 0 {
+				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
 			}
 			is = append(is, uint(i))
 		}
@@ -167,6 +175,8 @@ func setSlice(f *reflect.Value, value string) error {
 			i, err := strconv.Atoi(value)
 			if err != nil {
 				return err
+			} else if i > math.MaxUint8 || i < 0 {
+				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
 			}
 			is = append(is, uint8(i))
 		}
@@ -177,6 +187,8 @@ func setSlice(f *reflect.Value, value string) error {
 			i, err := strconv.Atoi(value)
 			if err != nil {
 				return err
+			} else if i > math.MaxUint16 || i < 0 {
+				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
 			}
 			is = append(is, uint16(i))
 		}
@@ -187,6 +199,8 @@ func setSlice(f *reflect.Value, value string) error {
 			i, err := strconv.Atoi(value)
 			if err != nil {
 				return err
+			} else if i > math.MaxUint32 || i < 0 {
+				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
 			}
 			is = append(is, uint32(i))
 		}
@@ -207,6 +221,8 @@ func setSlice(f *reflect.Value, value string) error {
 			i, err := strconv.Atoi(value)
 			if err != nil {
 				return err
+			} else if i > math.MaxUint8 || i < 0 {
+				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
 			}
 			is = append(is, uintptr(i))
 		}
@@ -217,6 +233,8 @@ func setSlice(f *reflect.Value, value string) error {
 			f, err := strconv.ParseFloat(value, 64)
 			if err != nil {
 				return err
+			} else if f > math.MaxFloat32 || f < SmallestNonzeroFloat32 {
+				return fmt.Errorf("ini: %f overflows %q", f, f.Type().Elem().Kind())
 			}
 			fs = append(fs, float32(f))
 		}
