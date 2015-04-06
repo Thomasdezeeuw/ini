@@ -27,37 +27,8 @@ func TestGetBool(t *testing.T) {
 	}
 }
 
-/*
-	func TestSetSlice(t *testing.T) {
-		tests := []struct {
-			input    []interface{}
-			expected []interface{}
-			value    string
-		}{
-			{[]string{}, []string{"tag1", "tag2"}, "tag1, tag2"},
-		}
-
-		for _, test := range tests {
-			f := reflect.Indirect(reflect.ValueOf(&test.input))
-			if err := setSlice(&f, test.value); err != nil {
-				t.Fatal(err)
-			}
-
-			if len(test.input) != len(test.expected) {
-				t.Fatalf("Expected the length of the slice to be %d, got %d",
-					len(test.expected), len(test.input))
-			}
-
-			for i, got := range test.input {
-				if expected := test.expected[i]; got != expected {
-					t.Fatalf("Expected the slice to be %v, but got %v",
-						test.expected, test.input)
-				}
-			}
-		}
-	}
-*/
-
+// todo: combine the TestSetSlice* functions.
+// todo: test slice errors.
 func TestSetSliceString(t *testing.T) {
 	var got []string
 	expected := []string{"tag1", "tag2"}
@@ -562,7 +533,7 @@ func TestConfigScan(t *testing.T) {
 	}
 }
 
-// todo: create 1 ScanError function
+// todo: combine the TestConfigScan*Error functions.
 func TestConfigScanError(t *testing.T) {
 	var got struct{}
 	c := Config{}

@@ -161,8 +161,6 @@ func TestGetKeyValue(t *testing.T) {
 		{"'key' = '';", "key", "", nil},
 		{"'key' = '' ;", "key", "", nil},
 
-		// todo: below
-
 		{`"=key"=value`, "=key", "value", nil}, // Escaped qoutes.
 		{`"k\"ey"=value`, `k"ey`, "value", nil},
 		{`key="val\"ue="`, "key", `val"ue=`, nil},
