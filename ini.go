@@ -107,7 +107,7 @@ func (c Config) Scan(dst interface{}) error {
 
 	// If it's not a pointer we can't change the value, so it's pointless to do
 	// anything. If it's not a struct or we can't set any keys on it.
-	if k := v.Kind(); vPtr.Kind() != reflect.Ptr || (k != reflect.Struct && k != reflect.Map) {
+	if vPtr.Kind() != reflect.Ptr || v.Kind() != reflect.Struct {
 		return errors.New("ini: ini.Config.Scan requires a pointer to struct")
 	}
 
@@ -121,7 +121,7 @@ func (c Config) Scan(dst interface{}) error {
 
 		// Make sure it's valid and a map or a struct, otherwise we can't do
 		// anything with it.
-		if k := sf.Kind(); !sf.IsValid() || (k != reflect.Struct && k != reflect.Map) {
+		if !sf.IsValid() || sf.Kind() != reflect.Struct {
 			return fmt.Errorf("ini: no struct %q on desination", sectionName)
 		}
 
