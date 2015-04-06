@@ -117,7 +117,7 @@ func setSlice(f *reflect.Value, value string) error {
 			i, err := strconv.Atoi(value)
 			if err != nil {
 				return err
-			} else if i > math.MaxInt8 || i < MinInt8 {
+			} else if i > math.MaxInt8 || i < math.MinInt8 {
 				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
 			}
 			ints = append(ints, int8(i))
@@ -129,7 +129,7 @@ func setSlice(f *reflect.Value, value string) error {
 			i, err := strconv.Atoi(value)
 			if err != nil {
 				return err
-			} else if i > math.MaxInt16 || i < MinInt16 {
+			} else if i > math.MaxInt16 || i < math.MinInt16 {
 				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
 			}
 			ints = append(ints, int16(i))
@@ -141,7 +141,7 @@ func setSlice(f *reflect.Value, value string) error {
 			i, err := strconv.Atoi(value)
 			if err != nil {
 				return err
-			} else if i > math.MaxInt32 || i < MinInt32 {
+			} else if i > math.MaxInt32 || i < math.MinInt32 {
 				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
 			}
 			ints = append(ints, int32(i))
@@ -230,13 +230,13 @@ func setSlice(f *reflect.Value, value string) error {
 	case reflect.Float32:
 		var fs []float32
 		for _, value := range values {
-			f, err := strconv.ParseFloat(value, 64)
+			fv, err := strconv.ParseFloat(value, 64)
 			if err != nil {
 				return err
-			} else if f > math.MaxFloat32 || f < SmallestNonzeroFloat32 {
-				return fmt.Errorf("ini: %f overflows %q", f, f.Type().Elem().Kind())
+			} else if fv > math.MaxFloat32 {
+				return fmt.Errorf("ini: %f overflows %q", fv, f.Type().Elem().Kind())
 			}
-			fs = append(fs, float32(f))
+			fs = append(fs, float32(fv))
 		}
 		f.Set(reflect.ValueOf(fs))
 	case reflect.Float64:
