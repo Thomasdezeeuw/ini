@@ -191,7 +191,7 @@ func Parse(r io.Reader) (Config, error) {
 		c[section][key] = value
 	}
 
-	return c, nil
+	return c, s.Err()
 }
 
 // Scan scans a configuration into a struct or map, see #Config.Scan.
