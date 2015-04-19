@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -121,7 +122,7 @@ func (c Config) Scan(dst interface{}) error {
 		// Make sure it's valid and a map or a struct, otherwise we can't do
 		// anything with it.
 		if !sf.IsValid() || sf.Kind() != reflect.Struct {
-			continue
+			return fmt.Errorf("ini: no struct %q on desination", sectionName)
 		}
 
 		// Set each key value in the section.
