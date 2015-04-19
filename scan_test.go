@@ -548,28 +548,6 @@ func TestConfigScanError(t *testing.T) {
 	}
 }
 
-func TestConfigScanSectionError(t *testing.T) {
-	var got struct {
-		Struct string
-	}
-
-	c := Config{
-		"Struct": {
-			"String": "string",
-		},
-	}
-
-	err := c.Scan(&got)
-	if err == nil {
-		t.Fatal("Expected an error but didn't get one")
-	}
-
-	expected := "ini: no struct \"Struct\" on desination"
-	if err.Error() != expected {
-		t.Fatalf("Expected the error to be %q, but got %q", expected, err.Error())
-	}
-}
-
 func TestConfigScanDurationError(t *testing.T) {
 	var got struct {
 		Duration time.Duration
