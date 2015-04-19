@@ -1,3 +1,7 @@
+// Copyright (C) 2015 Thomas de Zeeuw.
+//
+// Licensed onder the MIT license that can be found in the LICENSE file.
+
 // Package ini parses an ini formatted file. It can load it into a struct or
 // used directly.
 package ini
