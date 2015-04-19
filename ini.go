@@ -115,6 +115,8 @@ func (c Config) Scan(dst interface{}) error {
 		if sectionName == Global {
 			sf = v
 		} else {
+			// Rename the section like the following: "my section" -> "MySection".
+			sectionName = strings.Replace(strings.Title(sectionName), " ", "", -1)
 			sf = v.FieldByName(sectionName)
 		}
 

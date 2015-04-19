@@ -533,6 +533,44 @@ func TestConfigScan(t *testing.T) {
 	}
 }
 
+func TestScan(t *testing.T) {
+	var dst struct {
+		Name string
+		Msg  string
+		Http struct {
+			Port int
+			Url  string
+		}
+		Database struct {
+			User     string
+			Password string
+		}
+	}
+
+	if err := Scan("testdata/config.ini", &dst); err != nil {
+		t.Fatal(err)
+	}
+
+	if expected := "http server"; dst.Name != expected {
+		t.Fatalf("Expected dst.Name to be %q, got %q", expected, dst.Name)
+	}
+	if expected := "Welcome \"Bob\""; dst.Msg != expected {
+		t.Fatalf("Expected dst.Msg to be %q, got %q", expected, dst.Msg)
+	}
+	if expected := 8080; dst.Http.Port != expected {
+		t.Fatalf("Expected dst.Http.Port to be %d, got %d", expected, dst.Http.Port)
+	}
+	if expected := "example.com"; dst.Http.Url != expected {
+		t.Fatalf("Expected dst.Http.Url to be %q, got %q", expected, dst.Http.Url)
+	}
+	if expected := "bob"; dst.Database.User != expected {
+		t.Fatalf("Expected dst.Database.User to be %q, got %q", expected, dst.Database.User)
+	}
+	if expected := "password"; dst.Database.Password != expected {
+		t.Fatalf("Expected dst.Database.Password to be %q, got %q", expected, dst.Database.Password)
+	}
+}
+
 // todo: combine the TestConfigScan*Error functions.
 func TestConfigScanError(t *testing.T) {
 	var got struct{}
