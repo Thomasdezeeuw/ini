@@ -36,173 +36,6 @@ func TestGetKeysAlpha(t *testing.T) {
 	}
 }
 
-func TestIndexUnescapedQouted(t *testing.T) {
-	tests := []struct {
-		input    string
-		quote    string
-		expected int
-	}{
-		{"key", "\"", -1},
-		{"\"key", "\"", 0},
-		{"'key", "'", 0},
-		{"key\"", "\"", 3},
-		{"key'", "'", 3},
-		{"key\\\"", "\"", -1},
-		{"key\\'", "'", -1},
-		{"key\\\"\"", "\"", 5},
-		{"key\\''", "'", 5},
-	}
-
-	for _, test := range tests {
-		if got := indexUnescapedQouted(test.input, test.quote); got != test.expected {
-			t.Fatalf("Expected indexUnqouted(%q) to return %d, but got %d",
-				test.input, test.expected, got)
-		}
-	}
-}
-
-func TestGetKeyValue(t *testing.T) {
-	tests := []struct {
-		input string
-		key   string
-		value string
-		err   error
-	}{
-		{"key=value", "key", "value", nil}, // Simple.
-		{"k e y=v a l u e", "k e y", "v a l u e", nil},
-		{"key = value", "key", "value", nil},
-		{"key=", "key", "", nil},
-		{"key=value; comment", "key", "value", nil}, // Simple with comment.
-		{"key=value ; comment", "key", "value", nil},
-		{"key = value; comment", "key", "value", nil},
-		{"key = value ; comment", "key", "value", nil},
-		{"key=; comment", "key", "", nil}, // Simple only comment.
-		{"key= ; comment", "key", "", nil},
-		{"key=;", "key", "", nil}, // Simple empty comment.
-		{"key= ;", "key", "", nil},
-		{"key = ;", "key", "", nil},
-		{"key =  ;", "key", "", nil},
-
-		{`"key"=value`, "key", "value", nil}, // Double qoute.
-		{`"key" = value`, "key", "value", nil},
-		{`key="value"`, "key", "value", nil},
-		{`key = "value"`, "key", "value", nil},
-		{`"key"="value"`, "key", "value", nil},
-		{`"key" = "value"`, "key", "value", nil},
-		{`"key"=value; comment`, "key", "value", nil}, // Double qoute with comment.
-		{`"key"=value ; comment`, "key", "value", nil},
-		{`"key" = value; comment`, "key", "value", nil},
-		{`"key" = value ; comment`, "key", "value", nil},
-		{`key="value"; comment`, "key", "value", nil},
-		{`key="value" ; comment`, "key", "value", nil},
-		{`key = "value"; comment`, "key", "value", nil},
-		{`key = "value" ; comment`, "key", "value", nil},
-		{`"key"="value"; comment`, "key", "value", nil},
-		{`"key"="value" ; comment`, "key", "value", nil},
-		{`"key" = "value"; comment`, "key", "value", nil},
-		{`"key" = "value" ; comment`, "key", "value", nil},
-		{`"key"=; comment`, "key", "", nil}, // Double qoute only comment.
-		{`"key"= ; comment`, "key", "", nil},
-		{`"key" = ; comment`, "key", "", nil},
-		{`key=""; comment`, "key", "", nil},
-		{`key="" ; comment`, "key", "", nil},
-		{`key = ""; comment`, "key", "", nil},
-		{`key = "" ; comment`, "key", "", nil},
-		{`"key"=""; comment`, "key", "", nil},
-		{`"key"="" ; comment`, "key", "", nil},
-		{`"key" = ""; comment`, "key", "", nil},
-		{`"key" = "" ; comment`, "key", "", nil},
-		{`"key"=;`, "key", "", nil}, // Double quote empty comment.
-		{`"key"= ;`, "key", "", nil},
-		{`"key" = ;`, "key", "", nil},
-		{`key="";`, "key", "", nil},
-		{`key="" ;`, "key", "", nil},
-		{`key = "";`, "key", "", nil},
-		{`key = "" ;`, "key", "", nil},
-		{`"key"="";`, "key", "", nil},
-		{`"key"="" ;`, "key", "", nil},
-		{`"key" = "";`, "key", "", nil},
-		{`"key" = "" ;`, "key", "", nil},
-
-		{"'key'=value", "key", "value", nil}, // Single qoute.
-		{"'key' = value", "key", "value", nil},
-		{"key='value'", "key", "value", nil},
-		{"key = 'value'", "key", "value", nil},
-		{"'key'='value'", "key", "value", nil},
-		{"'key' = 'value'", "key", "value", nil},
-		{"'key'=value; comment", "key", "value", nil}, // Single qoute with comment.
-		{"'key'=value ; comment", "key", "value", nil},
-		{"'key' = value; comment", "key", "value", nil},
-		{"'key' = value ; comment", "key", "value", nil},
-		{"key='value'; comment", "key", "value", nil},
-		{"key='value' ; comment", "key", "value", nil},
-		{"key = 'value'; comment", "key", "value", nil},
-		{"key = 'value' ; comment", "key", "value", nil},
-		{"'key'='value'; comment", "key", "value", nil},
-		{"'key'='value' ; comment", "key", "value", nil},
-		{"'key' = 'value'; comment", "key", "value", nil},
-		{"'key' = 'value' ; comment", "key", "value", nil},
-		{"'key'=; comment", "key", "", nil}, // Single qoute only comment.
-		{"'key'= ; comment", "key", "", nil},
-		{"'key' = ; comment", "key", "", nil},
-		{"key=''; comment", "key", "", nil},
-		{"key='' ; comment", "key", "", nil},
-		{"key = ''; comment", "key", "", nil},
-		{"key = '' ; comment", "key", "", nil},
-		{"'key'=''; comment", "key", "", nil},
-		{"'key'='' ; comment", "key", "", nil},
-		{"'key' = ''; comment", "key", "", nil},
-		{"'key' = '' ; comment", "key", "", nil},
-		{"'key'=;", "key", "", nil}, // Single quote empty comment.
-		{"'key'= ;", "key", "", nil},
-		{"'key' = ;", "key", "", nil},
-		{"key='';", "key", "", nil},
-		{"key='' ;", "key", "", nil},
-		{"key = '';", "key", "", nil},
-		{"key = '' ;", "key", "", nil},
-		{"'key'='';", "key", "", nil},
-		{"'key'='' ;", "key", "", nil},
-		{"'key' = '';", "key", "", nil},
-		{"'key' = '' ;", "key", "", nil},
-
-		{`"=key"=value`, "=key", "value", nil}, // Escaped qoutes.
-		{`"k\"ey"=value`, `k"ey`, "value", nil},
-		{`key="val\"ue="`, "key", `val"ue=`, nil},
-
-		{"ke;y=value", "ke;y", "value", nil}, // Misc.
-		{`"ke;y"=value`, "ke;y", "value", nil},
-		{`key="val;ue"`, "key", "val;ue", nil},
-		{`"ke;y"="val;ue"`, "ke;y", "val;ue", nil},
-		{`key==value`, "key", `=value`, nil},
-		{`key=value=`, "key", `value=`, nil},
-
-		{`"key'=value`, "", "", errSynthax}, // Incorret.
-		{`key="value'`, "", "", errSynthax},
-		{`'key"=value`, "", "", errSynthax},
-		{`key='value"`, "", "", errSynthax},
-		{"key", "", "", errSynthax},
-		{"key value", "", "", errSynthax},
-		{`"key"`, "", "", errSynthax},
-		{`"key"value`, "", "", errSynthax},
-		{`"key"val=ue`, "", "", errSynthax},
-		{"=value", "", "", errSynthax},
-	}
-
-	for _, test := range tests {
-		key, value, err := getKeyValue(test.input)
-		if err != test.err {
-			t.Fatalf("Expected getKeyValue(%q) to return error \"%v\", got \"%v\"",
-				test.input, test.err, err)
-		} else if key != test.key {
-			t.Fatalf("Expected getKeyValue(%q) to return key %q, but got %q",
-				test.input, test.key, key)
-		} else if value != test.value {
-			t.Fatalf("Expected getKeyValue(%q) to return value %q, but got %q",
-				test.input, test.value, value)
-		}
-	}
-}
-
 func TestLoad(t *testing.T) {
 	const input = "testdata/config.ini"
 	c, err := Load(input)
@@ -238,7 +71,8 @@ func TestLoadErrors(t *testing.T) {
 		err      error
 		altCheck bool
 	}{
-		{"testdata/malformed.cfg", nil, errSynthax, false},
+		{"testdata/malformed.cfg", nil,
+			newSynthaxError(2, "error = 'oops!\"", "qoute not closed"), false},
 		{"testdata", nil, errFile, false},
 		{"testdata/notfound", nil, nil, true},
 	}
@@ -252,7 +86,10 @@ func TestLoadErrors(t *testing.T) {
 					test.input, err.Error())
 			}
 		} else {
-			if err != test.err {
+			if err == nil && test.err != nil {
+				t.Fatalf(`Expected Load(%q) to return error "%v", but didn't got one`,
+					test.input, test.err)
+			} else if err.Error() != test.err.Error() {
 				t.Fatalf(`Expected Load(%q) to return error "%v", but got "%v"`,
 					test.input, test.err, err)
 			}
@@ -299,6 +136,7 @@ func TestConfigString(t *testing.T) {
 }
 
 func TestComplete(t *testing.T) {
+	t.Skip()
 	c, err := Load("testdata/config.ini")
 	if err != nil {
 		t.Fatal(err)
@@ -334,12 +172,12 @@ func TestComplete(t *testing.T) {
 		t.Fatalf("Length doesn't match, got %d and %d", len(c), len(c2))
 	}
 
-	for section, section1 := range c {
-		for key, value1 := range section1 {
-			value2 := c2[section][key]
-			if value1 != value2 {
-				t.Fatalf("Expected section %q to key %q to be the same, but got %q and %q",
-					section, key, value1, value2)
+	for sectionName, loadedSection := range c {
+		for key, loadedValue := range loadedSection {
+			parsedValue := c2[sectionName][key]
+			if loadedValue != parsedValue {
+				t.Fatalf("Expected, in section %q, the keys %q to be the same, but got %q and %q",
+					sectionName, key, loadedValue, parsedValue)
 			}
 		}
 	}

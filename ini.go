@@ -7,10 +7,8 @@
 package ini
 
 import (
-	"bufio"
 	"bytes"
 	"errors"
-	"io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -33,17 +31,6 @@ var (
 //	value, found := config[ini.Global]["key"]
 const Global = global
 const global = "SUPERGLOBAL"
-
-// Different parts of the ini format.
-const (
-	commentStart = ";"
-	seperator    = "="
-	sectionStart = "["
-	sectionEnd   = "]"
-	doubleQuote  = `"`
-	singleQuote  = "'"
-	escapeQuote  = `\`
-)
 
 // Config holds all key-value pairs under sections. To retrieve keys use:
 //
@@ -165,40 +152,6 @@ func Load(path string) (Config, error) {
 	return Parse(f)
 }
 
-// Parse parses an ini format file.
-func Parse(r io.Reader) (Config, error) {
-	c := Config{}
-
-	// Start in the global section.
-	section := Global
-	c[section] = map[string]string{}
-
-	s := bufio.NewScanner(r)
-	for s.Scan() {
-		line := strings.TrimSpace(s.Text())
-		// Ignore empty lines and comments.
-		if len(line) == 0 || line[:1] == commentStart {
-			continue
-		}
-
-		// Handle sections.
-		if line[:1] == sectionStart && line[len(line)-1:] == sectionEnd {
-			section = line[1 : len(line)-1]
-			c[section] = map[string]string{}
-			continue
-		}
-
-		// Handle key-value pairs.
-		key, value, err := getKeyValue(line)
-		if err != nil {
-			return nil, err
-		}
-		c[section][key] = value
-	}
-
-	return c, s.Err()
-}
-
 // Scan scans a configuration into a struct or map, see #Config.Scan.
 func Scan(path string, dst interface{}) error {
 	c, err := Load(path)
@@ -206,94 +159,6 @@ func Scan(path string, dst interface{}) error {
 		return err
 	}
 	return c.Scan(dst)
-}
-
-// GetKeyValue gets a key value pair from a single line.
-func getKeyValue(line string) (key string, value string, err error) {
-	line = strings.TrimSpace(line)
-	// No seperator means no key-value pair, so a synthax error.
-	if count := strings.Count(line, seperator); count == 0 {
-		return "", "", errSynthax
-	}
-
-	// Determine if the key is qouted or not.
-	if quote := line[:1]; quote == doubleQuote || quote == singleQuote {
-		i := indexUnescapedQouted(line[1:], quote)
-		// No more unescaped qoutes found.
-		if i == -1 {
-			return "", "", errSynthax
-		}
-		i++ // we cut of the first quote.
-
-		// Skip the first quoute and include up to the next unescaped qoute.
-		key = strings.Replace(line[1:i], escapeQuote+quote, quote, -1)
-
-		// For the value skip the key and it's last unescaped qoute, trim it and
-		// the seperator should follow next, if not it's incorrect synthax. Finally
-		// drop the seperator.
-		value = strings.TrimSpace(line[i+1:])
-		if string(value[0]) != seperator {
-			return "", "", errSynthax
-		}
-		value = value[1:]
-	} else {
-		// Simple split on the seperator.
-		v := strings.SplitN(line, seperator, 2)
-		key, value = v[0], v[1]
-	}
-
-	key = strings.TrimSpace(key)
-	value = strings.TrimSpace(value)
-
-	// Key can't be empty, otherwise we can't put it in the map.
-	if len(key) == 0 {
-		return "", "", errSynthax
-	}
-
-	if len(value) != 0 {
-		// If the value is just a comment start, remove it. Otherwise check if the
-		// value is qouted or has a comment added to it.
-		if len(value) == 1 && value == commentStart {
-			value = ""
-		} else if quote := value[:1]; quote == doubleQuote || quote == singleQuote {
-			i := indexUnescapedQouted(value[1:], quote)
-			// No more unescaped qoutes found
-			if i == -1 {
-				return "", "", errSynthax
-			}
-			i++ // we cut of the first quote
-
-			// Skip the first quoute and include up to the next unescaped qoute.
-			value = strings.Replace(value[1:i], escapeQuote+quote, quote, -1)
-			value = strings.TrimSpace(value)
-		} else if i := strings.Index(value, commentStart); i != -1 {
-			// Drop any comment attached to the value
-			value = strings.TrimSpace(value[:i])
-		}
-	}
-
-	return key, value, nil
-}
-
-// indexUnescapedQouted gets the index of the next unescaped qoute.
-func indexUnescapedQouted(line, quote string) int {
-	i := strings.Index(line, quote)
-	for lineLeft := line; i != -1; i = strings.Index(lineLeft, quote) {
-		// If the quote is not escaped it is the closing quote and the key
-		// ends here.
-		if i == 0 || string(lineLeft[i-1]) != escapeQuote {
-			// The end is the index of the found quoute plus the difference in
-			// the length of the line and the length of what is left of the line
-			// plus 1 (0 index, want to include the quote character).
-			return i + (len(line) - len(lineLeft))
-		}
-
-		// Escaped quote, on to the next one.
-		lineLeft = lineLeft[i+1:]
-	}
-
-	// No unqouted qoute found
-	return -1
 }
 
 // GetKeysAlpha returns keys of the map sorted alphabetically.
