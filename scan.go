@@ -14,10 +14,6 @@ import (
 	"time"
 )
 
-// Time formats supported in parsing time.
-var timeFormats = []string{"2006-01-02", "2006-01-02 15:04",
-	"2006-01-02 15:04:05"}
-
 // SetReflectValue sets the value of reflected value.
 func setReflectValue(f *reflect.Value, value string) error {
 	// Test for time.Duration and time.Time first.

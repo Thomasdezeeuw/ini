@@ -28,12 +28,15 @@ const Global = global
 // of the constant.
 const global = "SUPERGLOBAL"
 
+var timeFormats = []string{"2006-01-02", "2006-01-02 15:04",
+	"2006-01-02 15:04:05"}
+
 // Config holds all key-value pairs under sections. To retrieve keys use:
 //
 //	value, found := config["section"]["key"]
 //
-// And use the `ini.Global` constant to retrieve key-value pairs not under any
-// section, or the "global" section:
+// You can use the `ini.Global` constant to retrieve key-value pairs not under
+// any section, or the "global" section:
 //
 //	value, found := config[ini.Global]["key"]
 type Config map[string]map[string]string
@@ -75,24 +78,28 @@ func (c *Config) WriteTo(w io.Writer) (int64, error) {
 	return c.buffer().WriteTo(w)
 }
 
-// Scan scan a configuration into a struct or map. Any properties to be set
-// need to be exported. Key are renamed, whitespace is removed and keys start
-// with a capaital letter, like so:
+// Scan scans a configuration into a struct or map. Any properties to be set
+// need to be public. Keys are renamed, whitespace is removed and keys start
+// with a capaital, like so:
 //
 //	"my key" -> "MyKey"
 //
-// Slices are exported by using a comma separated list, like so:
+// Slices are supported by using a comma separated list, like so:
 //
 //	"string1, string2" -> []string{"string1", "string2"}
 //	"1, 2, 3" -> []int{1, 2, 3}
 //
 // Booleans are supported aswell:
 //
-//	"1, true, TRUE" // true
-//	"0, false, FALSE, anything else" // false
+//	"1, true, TRUE" -> true
+//	"0, false, FALSE, anything else" -> false
 //
-// *Note underneath Scan uses reflect which isn't great for performance, use it
-// with care.
+// Time is supported with the following formats:
+//
+//	"2006-01-02", "2006-01-02 15:04", "2006-01-02 15:04:05"
+//
+// *Note underneath Scan uses the reflect package which isn't great for
+// performance, so use it with care.
 func (c Config) Scan(dst interface{}) error {
 	vPtr := reflect.ValueOf(dst)
 	v := reflect.Indirect(vPtr)
@@ -144,7 +151,6 @@ func Load(path string) (Config, error) {
 	}
 	defer f.Close()
 
-	// Make sure it's a file.
 	if s, err := f.Stat(); err != nil {
 		return nil, err
 	} else if s.IsDir() {
@@ -172,9 +178,10 @@ func getMapsKeysAlpha(m map[string]string) []string {
 	return keys
 }
 
+// GetConfigSectionsAlpha sort the sections alphabetically with the global
+// section first.
 func getConfigSectionsAlpha(c Config) []string {
-	// Make sure the global section is the first section.
-	sections := make([]string, 0, len(c)-1)
+	sections := make([]string, 0, len(c))
 	for section := range c {
 		if section != Global {
 			sections = append(sections, section)
