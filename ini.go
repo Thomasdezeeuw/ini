@@ -42,35 +42,33 @@ const global = "SUPERGLOBAL"
 //	value, found := config[ini.Global]["key"]
 type Config map[string]map[string]string
 
-// String returns a ini-formatted configuration, ready to be written to a file.
-func (c Config) String() string {
+// String returns an ini formatted configuration, ready to be written to a file.
+func (c *Config) String() string {
+	return c.buffer().String()
+}
+
+
+// Buffer creates a `bytes.Buffer` with an ini formatted configuration.
+func (c *Config) buffer() *bytes.Buffer {
 	var result bytes.Buffer
 
-	// Order the sections alphabetically, ignore the "global" section.
-	sections := make([]string, 0, len(c)-1)
-	for section := range c {
-		if section != Global {
-			sections = append(sections, section)
-		}
-	}
-	sort.Strings(sections)
-
-	// Write each section starting with the "global" one.
-	for _, section := range append([]string{Global}, sections...) {
-		// Write the section header, except for the "global" section.
-		if section != Global {
-			result.WriteString("[" + section + "]\n")
+	sections := getConfigSectionsAlpha(*c)
+	for _, sectionName := range sections {
+		if sectionName != Global {
+			result.WriteString("[" + sectionName + "]\n")
 		}
 
-		// Write each key-value pair.
-		confSection := c[section]
-		for _, key := range getKeysAlpha(confSection) {
-			result.WriteString(key + "=" + confSection[key] + "\n")
+		section := (*c)[sectionName]
+		keys := getMapsKeysAlpha(section)
+		for _, key := range keys {
+			value := section[key]
+			result.WriteString(key + "=" + value + "\n")
 		}
 		result.WriteString("\n")
 	}
 
-	return result.String()
+	return &result
+}
 }
 
 // Scan scan a configuration into a struct or map. Any properties to be set
@@ -161,12 +159,23 @@ func Scan(path string, dst interface{}) error {
 	return c.Scan(dst)
 }
 
-// GetKeysAlpha returns keys of the map sorted alphabetically.
-func getKeysAlpha(m map[string]string) []string {
+func getMapsKeysAlpha(m map[string]string) []string {
 	keys := make([]string, 0, len(m))
 	for key := range m {
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)
 	return keys
+}
+
+func getConfigSectionsAlpha(c Config) []string {
+	// Make sure the global section is the first section.
+	sections := make([]string, 0, len(c)-1)
+	for section := range c {
+		if section != Global {
+			sections = append(sections, section)
+		}
+	}
+	sort.Strings(sections)
+	return append([]string{Global}, sections...)
 }
