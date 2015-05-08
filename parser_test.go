@@ -9,6 +9,7 @@ package ini
 import (
 	"strings"
 	"testing"
+	"testing/iotest"
 )
 
 func TestSectionLine(t *testing.T) {
@@ -301,5 +302,20 @@ func TestParseError(t *testing.T) {
 			t.Fatalf("Expected Parse(%s) to return error: %q, but got %q",
 				test.content, test.errMsg, err.Error())
 		}
+	}
+}
+
+func TestParseIOError(t *testing.T) {
+	r := iotest.TimeoutReader(strings.NewReader("key=value\nkey2=value2"))
+
+	_, err := Parse(r)
+	if err == nil {
+		t.Fatalf("Expected Parse() to return an error, but didn't get one")
+	}
+
+	errMsg := "ini: error reading: " + iotest.ErrTimeout.Error()
+	if err.Error() != errMsg {
+		t.Fatalf("Expected Parse() to return error: %q, but got %q",
+			errMsg, err.Error())
 	}
 }
