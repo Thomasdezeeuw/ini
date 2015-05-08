@@ -37,6 +37,25 @@ func TestGetKeysAlpha(t *testing.T) {
 	}
 }
 
+func TestGetConfigSectionsAlpha(t *testing.T) {
+	c := Config{Global: {}, "section1": {}, "section2": {}}
+
+	got := getConfigSectionsAlpha(c)
+	expects := []string{Global, "section1", "section2"}
+
+	if len(got) != len(expects) {
+		t.Fatalf("Expected getConfigSectionsAlpha(%v) to return %v, got %v",
+			c, expects, got)
+	}
+
+	for i, k := range got {
+		if expected := expects[i]; k != expected {
+			t.Fatalf("Expected getConfigSectionsAlpha(%v) to return %v, got %v",
+				c, expects, got)
+		}
+	}
+}
+
 func TestLoad(t *testing.T) {
 	const input = "testdata/config.ini"
 	c, err := Load(input)
