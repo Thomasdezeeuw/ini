@@ -11,6 +11,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"io"
 	"reflect"
 	"sort"
 	"strings"
@@ -47,6 +48,10 @@ func (c *Config) String() string {
 	return c.buffer().String()
 }
 
+// Bytes returns an ini formatted configuration, ready to be written to a file.
+func (c *Config) Bytes() []byte {
+	return c.buffer().Bytes()
+}
 
 // Buffer creates a `bytes.Buffer` with an ini formatted configuration.
 func (c *Config) buffer() *bytes.Buffer {
@@ -69,6 +74,10 @@ func (c *Config) buffer() *bytes.Buffer {
 
 	return &result
 }
+
+// WriteTo writes the configuration to the writer in the ini format.
+func (c *Config) WriteTo(w io.Writer) (int64, error) {
+	return c.buffer().WriteTo(w)
 }
 
 // Scan scan a configuration into a struct or map. Any properties to be set
