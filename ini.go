@@ -2,8 +2,8 @@
 //
 // Licensed onder the MIT license that can be found in the LICENSE file.
 
-// Package ini parses an ini formatted file. It can load it into a struct or
-// used directly.
+// Package ini parses an ini formatted file. The parsed configuration can be
+// scanned into a variable or used directly.
 package ini
 
 import (
@@ -31,6 +31,9 @@ var (
 //
 //	value, found := config[ini.Global]["key"]
 const Global = global
+
+// We hide the public Globals value to hope people won't use the string instead
+// of the constant.
 const global = "SUPERGLOBAL"
 
 // Config holds all key-value pairs under sections. To retrieve keys use:
