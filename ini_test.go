@@ -5,6 +5,7 @@
 package ini
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -20,17 +21,17 @@ func TestGetKeysAlpha(t *testing.T) {
 		"c": "c",
 	}
 
-	got := getKeysAlpha(input)
+	got := getMapsKeysAlpha(input)
 	expects := []string{"a", "b", "c", "d", "e", "f"}
 
 	if len(got) != len(expects) {
-		t.Fatalf("Expected getKeysAlpha(%v) to return %v, got %v",
+		t.Fatalf("Expected getMapsKeysAlpha(%v) to return %v, got %v",
 			input, expects, got)
 	}
 
 	for i, k := range got {
 		if expected := expects[i]; k != expected {
-			t.Fatalf("Expected getKeysAlpha(%v) to return %v, got %v",
+			t.Fatalf("Expected getMapsKeysAlpha(%v) to return %v, got %v",
 				input, expects, got)
 		}
 	}
@@ -73,7 +74,7 @@ func TestLoadErrors(t *testing.T) {
 	}{
 		{"testdata/malformed.cfg", nil,
 			newSynthaxError(2, "error = 'oops!\"", "qoute not closed"), false},
-		{"testdata", nil, errFile, false},
+		{"testdata", nil, errors.New("ini: only loading files is supported"), false},
 		{"testdata/notfound", nil, nil, true},
 	}
 

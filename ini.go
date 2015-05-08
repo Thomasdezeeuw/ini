@@ -9,20 +9,12 @@ package ini
 import (
 	"bytes"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
-	"io"
 	"reflect"
 	"sort"
 	"strings"
-)
-
-var (
-	errFile = errors.New("ini: only loading files is supported")
-
-	// todo: create a error type for synthax error, with line a column. Easier
-	// for debugging.
-	errSynthax = errors.New("ini: incorrect formatted synthax")
 )
 
 // Global is the section name for key-values not under a section. It is used
@@ -156,7 +148,7 @@ func Load(path string) (Config, error) {
 	if s, err := f.Stat(); err != nil {
 		return nil, err
 	} else if s.IsDir() {
-		return nil, errFile
+		return nil, errors.New("ini: only loading files is supported")
 	}
 
 	return Parse(f)
