@@ -7,6 +7,7 @@ package ini
 // todo: test io stuff: http://localhost:6060/pkg/testing/iotest/.
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 	"testing/iotest"
@@ -240,14 +241,22 @@ func TestKeyValueLineErrors(t *testing.T) {
 	}
 }
 
-// todo: Add more test data.
 func TestParse(t *testing.T) {
 	tests := []struct {
 		content string
 		config  Config
 	}{
 		{"[section]", Config{Global: {}, "section": {}}},
+		{"key=value", Config{Global: {"key": "value"}}},
+		{"key=value; comment", Config{Global: {"key": "value"}}},
+		{"; comment", Config{Global: {}}},
+		{"key=value\n; comment", Config{Global: {"key": "value"}}},
 		{"[section]\n\nkey=value", Config{Global: {}, "section": {"key": "value"}}},
+		{"key=value\n[section]\nkey=value", Config{Global: {"key": "value"},
+			"section": {"key": "value"}}},
+		{"key=value\n[section]\nkey=value\n\n[section2]\nkey2 = value2",
+			Config{Global: {"key": "value"}, "section": {"key": "value"},
+				"section2": {"key2": "value2"}}},
 	}
 
 	for _, test := range tests {
@@ -256,26 +265,9 @@ func TestParse(t *testing.T) {
 			t.Fatalf("Unexpected error from Parse(%s): %s", test.content, err.Error())
 		}
 
-		if len(config) != len(test.config) {
+		if !reflect.DeepEqual(config, test.config) {
 			t.Fatalf("Expected Parse(%s) to return %q, but got %q",
 				test.content, config, test.config)
-		}
-
-		for sectionName, expectedSection := range test.config {
-			gotSection, ok := config[sectionName]
-			if !ok {
-				t.Fatalf("Expected Parse(%s) to return %q, but got %q",
-					test.content, config, test.config)
-			}
-
-			for key, expected := range expectedSection {
-				got := gotSection[key]
-
-				if got != expected {
-					t.Fatalf("Expected Parse(%s) to return %q, but got %q",
-						test.content, config, test.config)
-				}
-			}
 		}
 	}
 }
