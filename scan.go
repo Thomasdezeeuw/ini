@@ -232,44 +232,15 @@ func setSlice(f *reflect.Value, value string) error {
 	return nil
 }
 
-func setDuration(keyValue *reflect.Value, value string) error {
-	duration, err := time.ParseDuration(value)
-	if err != nil {
-		return createConvertError(value, "time.Duration")
-	}
-
-	durationValue := reflect.ValueOf(duration)
-	keyValue.Set(durationValue)
-	return nil
-}
-
-func setTime(keyValue *reflect.Value, value string) error {
-	for _, format := range timeFormats {
-		t, err := time.Parse(format, value)
-		if err == nil {
-			timeValue := reflect.ValueOf(t)
-			keyValue.Set(timeValue)
-			return nil
-		}
-	}
-
-	return createConvertError(value, "time.Time")
-}
-
 // Returns true on "1" and "true", anything returns false.
 func setBool(keyValue *reflect.Value, value string) error {
-	b := parseBool(value)
-	keyValue.SetBool(b)
-	return nil
-}
-
-func parseBool(value string) bool {
 	var b bool
 	value = strings.TrimSpace(value)
 	if value == "1" || strings.ToLower(value) == "true" {
 		b = true
 	}
-	return b
+	keyValue.SetBool(b)
+	return nil
 }
 
 func setInt(keyValue *reflect.Value, value string) error {
@@ -316,13 +287,28 @@ func setFloat(keyValue *reflect.Value, value string) error {
 	return nil
 }
 
-// Rename the key to a public name of a struct, e.g.
-//
-//	"my key" -> "MyKey"
-func renameToPublicName(name string) string {
-	name = strings.Title(name)
-	name = strings.Replace(name, " ", "", -1)
-	return name
+func setDuration(keyValue *reflect.Value, value string) error {
+	duration, err := time.ParseDuration(value)
+	if err != nil {
+		return createConvertError(value, "time.Duration")
+	}
+
+	durationValue := reflect.ValueOf(duration)
+	keyValue.Set(durationValue)
+	return nil
+}
+
+func setTime(keyValue *reflect.Value, value string) error {
+	for _, format := range timeFormats {
+		t, err := time.Parse(format, value)
+		if err == nil {
+			timeValue := reflect.ValueOf(t)
+			keyValue.Set(timeValue)
+			return nil
+		}
+	}
+
+	return createConvertError(value, "time.Time")
 }
 
 func getSectionValue(keyValue reflect.Value, sectionName string) reflect.Value {
@@ -332,6 +318,23 @@ func getSectionValue(keyValue reflect.Value, sectionName string) reflect.Value {
 
 	sectionName = renameToPublicName(sectionName)
 	return keyValue.FieldByName(sectionName)
+}
+
+// Rename the key to a public name of a struct, e.g.
+//
+//	"my key" -> "MyKey"
+func renameToPublicName(name string) string {
+	name = strings.Title(name)
+	name = strings.Replace(name, " ", "", -1)
+	return name
+}
+
+func getValues(value string) []string {
+	values := strings.Split(value, ",")
+	for i, value := range values {
+		values[i] = strings.TrimSpace(value)
+	}
+	return values
 }
 
 func createOverflowError(value, t string) error {
