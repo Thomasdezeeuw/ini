@@ -9,6 +9,7 @@ package ini
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -125,7 +126,11 @@ func (c Config) Scan(dst interface{}) error {
 			}
 
 			if err := setReflectValue(&keyValue, value); err != nil {
-				return err
+				if sectionName == Global {
+					sectionName = "Global"
+				}
+				return fmt.Errorf("ini: error scanning %q in section %q: %s",
+					key, sectionName, err.Error())
 			}
 		}
 	}

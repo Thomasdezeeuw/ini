@@ -5,7 +5,6 @@
 package ini
 
 import (
-	"errors"
 	"fmt"
 	"math"
 	"reflect"
@@ -14,68 +13,28 @@ import (
 	"time"
 )
 
-// SetReflectValue sets the value of reflected value.
-func setReflectValue(f *reflect.Value, value string) error {
-	// Test for time.Duration and time.Time first.
-	// todo: improve this, this really shouldn't be the way to do it.
-	if tStr := fmt.Sprintf("%v", f.Type()); tStr == "time.Duration" {
-		duration, err := time.ParseDuration(value)
-		if err != nil {
-			return err
-		}
-		f.Set(reflect.ValueOf(duration))
-		return nil
+func setReflectValue(keyValue *reflect.Value, value string) error {
+	// todo: improve the detection of time.Duration and time.Time.
+	if tStr := fmt.Sprintf("%v", keyValue.Type()); tStr == "time.Duration" {
+		return setDuration(keyValue, value)
 	} else if tStr == "time.Time" {
-		for _, format := range timeFormats {
-			t, err := time.Parse(format, value)
-			if err == nil {
-				f.Set(reflect.ValueOf(t))
-				return nil
-			}
-		}
-		return errors.New("ini: unkown time layout " + value)
+		return setTime(keyValue, value)
 	}
 
-	// todo: clean up the switch.
-	switch f.Kind() {
+	switch keyValue.Kind() {
 	case reflect.String:
-		f.SetString(value)
+		keyValue.SetString(value)
 	case reflect.Bool:
-		f.SetBool(getBool(value))
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
-		reflect.Int64:
-		i, err := strconv.Atoi(value)
-		if err != nil {
-			return err
-		} else if f.OverflowInt(int64(i)) {
-			return fmt.Errorf("ini: %d overflows %q", i, f.Kind().String())
-		}
-
-		f.SetInt(int64(i))
+		return setBool(keyValue, value)
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return setInt(keyValue, value)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32,
 		reflect.Uint64, reflect.Uintptr:
-		i, err := strconv.Atoi(value)
-		if err != nil {
-			return err
-		} else if f.OverflowUint(uint64(i)) {
-			return fmt.Errorf("ini: %d overflows %q", i, f.Kind().String())
-		}
-
-		f.SetUint(uint64(i))
+		return setUint(keyValue, value)
 	case reflect.Float32, reflect.Float64:
-		fv, err := strconv.ParseFloat(value, 64)
-		if err != nil {
-			return err
-		} else if f.OverflowFloat(fv) {
-			return fmt.Errorf("ini: %f overflows %q", fv, f.Kind().String())
-		}
-
-		f.SetFloat(fv)
+		return setFloat(keyValue, value)
 	case reflect.Slice:
-		err := setSlice(f, value)
-		if err != nil {
-			return err
-		}
+		return setSlice(keyValue, value)
 	}
 
 	return nil
@@ -99,7 +58,7 @@ func setSlice(f *reflect.Value, value string) error {
 	case reflect.Bool:
 		var bs []bool
 		for _, value := range values {
-			bs = append(bs, getBool(value))
+			bs = append(bs, parseBool(value))
 		}
 		f.Set(reflect.ValueOf(bs))
 	case reflect.Int:
@@ -255,13 +214,88 @@ func setSlice(f *reflect.Value, value string) error {
 	return nil
 }
 
+func setDuration(keyValue *reflect.Value, value string) error {
+	duration, err := time.ParseDuration(value)
+	if err != nil {
+		return createConvertError(value, "time.Duration")
+	}
+
+	durationValue := reflect.ValueOf(duration)
+	keyValue.Set(durationValue)
+	return nil
+}
+
+func setTime(keyValue *reflect.Value, value string) error {
+	for _, format := range timeFormats {
+		t, err := time.Parse(format, value)
+		if err == nil {
+			timeValue := reflect.ValueOf(t)
+			keyValue.Set(timeValue)
+			return nil
+		}
+	}
+
+	return createConvertError(value, "time.Time")
+}
+
 // Returns true on "1" and "true", anything returns false.
-func getBool(value string) bool {
+func setBool(keyValue *reflect.Value, value string) error {
+	b := parseBool(value)
+	keyValue.SetBool(b)
+	return nil
+}
+
+func parseBool(value string) bool {
+	var b bool
 	value = strings.TrimSpace(value)
 	if value == "1" || strings.ToLower(value) == "true" {
-		return true
+		b = true
 	}
-	return false
+	return b
+}
+
+func setInt(keyValue *reflect.Value, value string) error {
+	i, err := strconv.Atoi(value)
+	if err != nil {
+		return createConvertError(value, keyValue.Kind().String())
+	}
+	i64 := int64(i)
+
+	if keyValue.OverflowInt(i64) {
+		createOverflowError(value, keyValue.Kind().String())
+	}
+
+	keyValue.SetInt(i64)
+	return nil
+}
+
+func setUint(keyValue *reflect.Value, value string) error {
+	i, err := strconv.Atoi(value)
+	if err != nil {
+		return createConvertError(value, keyValue.Kind().String())
+	}
+	ui64 := uint64(i)
+
+	if keyValue.OverflowUint(ui64) {
+		createOverflowError(value, keyValue.Kind().String())
+	}
+
+	keyValue.SetUint(ui64)
+	return nil
+}
+
+func setFloat(keyValue *reflect.Value, value string) error {
+	f, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		return createConvertError(value, keyValue.Kind().String())
+	}
+
+	if keyValue.OverflowFloat(f) {
+		createOverflowError(value, keyValue.Kind().String())
+	}
+
+	keyValue.SetFloat(f)
+	return nil
 }
 
 // Rename the key to a public name of a struct, e.g.
@@ -280,4 +314,13 @@ func getSectionValue(keyValue reflect.Value, sectionName string) reflect.Value {
 
 	sectionName = renameToPublicName(sectionName)
 	return keyValue.FieldByName(sectionName)
+}
+
+func createOverflowError(value, t string) error {
+	return fmt.Errorf("can't convert %q to type %s, it overflows type %s",
+		value, t, t)
+}
+
+func createConvertError(value, t string) error {
+	return fmt.Errorf("can't convert %q to type %s", value, t)
 }
