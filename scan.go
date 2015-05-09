@@ -13,28 +13,46 @@ import (
 	"time"
 )
 
+var (
+	typeString   = reflect.TypeOf("")
+	typeBool     = reflect.TypeOf(true)
+	typeInt      = reflect.TypeOf(int(1))
+	typeInt8     = reflect.TypeOf(int8(1))
+	typeInt16    = reflect.TypeOf(int16(1))
+	typeInt32    = reflect.TypeOf(int32(1))
+	typeInt64    = reflect.TypeOf(int64(1))
+	typeUint     = reflect.TypeOf(uint(1))
+	typeUint8    = reflect.TypeOf(uint8(1))
+	typeUint16   = reflect.TypeOf(uint16(1))
+	typeUint32   = reflect.TypeOf(uint32(1))
+	typeUint64   = reflect.TypeOf(uint64(1))
+	typeFloat32  = reflect.TypeOf(float32(1.0))
+	typeFloat64  = reflect.TypeOf(float64(1.0))
+	typeDuration = reflect.TypeOf(time.Nanosecond)
+	typeTime     = reflect.TypeOf(time.Time{})
+)
+
 func setReflectValue(keyValue *reflect.Value, value string) error {
-	// todo: improve the detection of time.Duration and time.Time.
-	if tStr := fmt.Sprintf("%v", keyValue.Type()); tStr == "time.Duration" {
-		return setDuration(keyValue, value)
-	} else if tStr == "time.Time" {
-		return setTime(keyValue, value)
+	if keyValue.Kind() == reflect.Slice {
+		return setSlice(keyValue, value)
 	}
 
-	switch keyValue.Kind() {
-	case reflect.String:
+	// todo: (maybe) add map and struct (convert to a section maybe?).
+	switch keyValue.Type() {
+	case typeString:
 		keyValue.SetString(value)
-	case reflect.Bool:
+	case typeBool:
 		return setBool(keyValue, value)
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+	case typeInt, typeInt8, typeInt16, typeInt32, typeInt64:
 		return setInt(keyValue, value)
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32,
-		reflect.Uint64, reflect.Uintptr:
+	case typeUint, typeUint8, typeUint16, typeUint32, typeUint64:
 		return setUint(keyValue, value)
-	case reflect.Float32, reflect.Float64:
+	case typeFloat32, typeFloat64:
 		return setFloat(keyValue, value)
-	case reflect.Slice:
-		return setSlice(keyValue, value)
+	case typeDuration:
+		return setDuration(keyValue, value)
+	case typeTime:
+		return setTime(keyValue, value)
 	}
 
 	return nil
