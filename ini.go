@@ -14,7 +14,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"sort"
-	"strings"
 )
 
 // Global is the section name for key-values not under a section. It is used
@@ -101,40 +100,31 @@ func (c *Config) WriteTo(w io.Writer) (int64, error) {
 // *Note underneath Scan uses the reflect package which isn't great for
 // performance, so use it with care.
 func (c Config) Scan(dst interface{}) error {
-	vPtr := reflect.ValueOf(dst)
-	v := reflect.Indirect(vPtr)
+	valuePtr := reflect.ValueOf(dst)
+	value := reflect.Indirect(valuePtr)
 
-	// If it's not a pointer we can't change the value, so it's pointless to do
-	// anything. If it's not a struct or we can't set any keys on it.
-	if vPtr.Kind() != reflect.Ptr || v.Kind() != reflect.Struct {
+	// If it's not a pointer we can't change the original value and if it's not a
+	// struct we can't set/change any keys on it, in either case we can't do
+	// anything with the value.
+	if valuePtr.Kind() != reflect.Ptr || value.Kind() != reflect.Struct {
 		return errors.New("ini: ini.Config.Scan requires a pointer to struct")
 	}
 
 	for sectionName, section := range c {
-		var sf reflect.Value
-		if sectionName == Global {
-			sf = v
-		} else {
-			// Rename the section like the following: "my section" -> "MySection".
-			sectionName = strings.Replace(strings.Title(sectionName), " ", "", -1)
-			sf = v.FieldByName(sectionName)
-		}
-
-		// Make sure it's valid and a map or a struct, otherwise we can't do
-		// anything with it.
-		if !sf.IsValid() || sf.Kind() != reflect.Struct {
+		sectionValue := getSectionValue(value, sectionName)
+		if !sectionValue.IsValid() || sectionValue.Kind() != reflect.Struct {
 			continue
 		}
 
-		// Set each key value in the section.
 		for key, value := range section {
-			// Rename the key like the following: "my key" -> "MyKey".
-			key = strings.Replace(strings.Title(key), " ", "", -1)
+			key = renameToPublicName(key)
 
-			// Try to get  the field and make sure we can change it.
-			if f := sf.FieldByName(key); !f.IsValid() || !f.CanSet() {
+			keyValue := sectionValue.FieldByName(key)
+			if !keyValue.IsValid() || !keyValue.CanSet() {
 				continue
-			} else if err := setReflectValue(&f, value); err != nil {
+			}
+
+			if err := setReflectValue(&keyValue, value); err != nil {
 				return err
 			}
 		}
