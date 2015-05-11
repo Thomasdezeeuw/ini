@@ -21,6 +21,7 @@ func newSynthaxError(lineNumber int, line, msg string) error {
 	}
 }
 
+// IsSynthaxError checks if a returned error is a synthax error.
 func IsSynthaxError(err error) bool {
 	_, ok := err.(synthaxError)
 	return ok

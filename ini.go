@@ -20,21 +20,26 @@ import (
 // for retrieving key-value pairs in the "global" section, or not under any
 // other section.
 //
-//	value, found := config[ini.Global]["key"]
+//	value := config[ini.Global]["key"]
+//	value2, found := config[ini.Global]["key2"]
 const Global = global
 
-// We hide the public Globals value to hope people won't use the string instead
-// of the constant.
+// We hide the public Global value in the hope people won't use the string
+// instead of the constant.
 const global = "SUPERGLOBAL"
 
-// Config holds all key-value pairs under sections. To retrieve keys use:
+// Config holds all key-value pairs under sections. To retrieve a key-value
+// pair you can use:
 //
-//	value, found := config["section"]["key"]
+//	value := config["section"]["key"]
+//	value2, found := config["section"]["key2"]
 //
-// You can use the `ini.Global` constant to retrieve key-value pairs not under
-// any section, or the "global" section:
+// The same as you would for a map. For retrieving key-value pairs not in any
+// section, or the "global" section, you can use the `ini.Global` constant,
+// like so:
 //
-//	value, found := config[ini.Global]["key"]
+//	value := config[ini.Global]["key"]
+//	value2, found := config[ini.Global]["key2"]
 type Config map[string]map[string]string
 
 // String returns an ini formatted configuration, ready to be written to a file.
@@ -76,9 +81,9 @@ func (c *Config) buffer() *bytes.Buffer {
 	return &result
 }
 
-// Scan scans a configuration into a struct or map. Any properties to be set
-// need to be public. Keys are renamed, whitespace is removed and keys start
-// with a capaital, like so:
+// Scan scans a configuration into a struct. Any properties to be set need to
+// be public. Keys are renamed, whitespace is removed and keys start with a
+// capaital, like so:
 //
 //	"my key" -> "MyKey"
 //
@@ -95,6 +100,9 @@ func (c *Config) buffer() *bytes.Buffer {
 // Time is supported with the following formats:
 //
 //	"2006-01-02", "2006-01-02 15:04", "2006-01-02 15:04:05"
+//
+// Duration is also supported, it uses `time.ParseDuration` so for supported
+// format see the seperate documentation.
 //
 // *Note underneath Scan uses the reflect package which isn't great for
 // performance, so use it with care.
@@ -160,8 +168,9 @@ func getConfigSectionsAlpha(c Config) []string {
 
 // PossibleQoute adds qouting to key or values when needed. For example:
 //
-//	my "key" -> "my \"key\""
-//	my 'key' -> "my 'key'"
+//	`my key`   -> `my key`       // no qoutes.
+//	`my "key"` -> `"my \"key\""` // qoutes and escaped qoutes.
+//	`my 'key'` -> `"my 'key'"`   // just qoutes.
 func possibleQoute(value string) string {
 	if strings.Index(value, `"`) != -1 {
 		return `"` + strings.Replace(value, `"`, `\"`, -1) + `"`
