@@ -11,8 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
-	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
@@ -139,23 +137,6 @@ func (c Config) Scan(dst interface{}) error {
 	}
 
 	return nil
-}
-
-// Load a single configuration file.
-func Load(path string) (Config, error) {
-	f, err := os.Open(filepath.Clean(path))
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	if s, err := f.Stat(); err != nil {
-		return nil, err
-	} else if s.IsDir() {
-		return nil, errors.New("ini: only loading files is supported")
-	}
-
-	return Parse(f)
 }
 
 func getMapsKeysAlpha(m map[string]string) []string {

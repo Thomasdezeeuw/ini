@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -74,36 +75,23 @@ func TestGetConfigSectionsAlpha(t *testing.T) {
 	}
 }
 
-func TestLoad(t *testing.T) {
-	const input = "testdata/config.ini"
-	c, err := Load(input)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	tests := []struct {
-		section  string
-		key      string
-		expected string
-	}{
-		{Global, "name", "http server"},
-		{Global, "msg", "Welcome \"Bob\""},
-		{"http", "port", "8080"},
-		{"http", "url", "example.com"},
-		{"database", "user", "bob"},
-		{"database", "password", "password"},
-	}
-
-	for _, test := range tests {
-		if got := c[test.section][test.key]; got != test.expected {
-			t.Fatalf("Expected Load(%q) to return config[%q][%q] to be %q, but got %q",
-				input, test.section, test.key, test.expected, got)
-		}
-	}
-}
-
 func TestComplete(t *testing.T) {
-	c, err := Load("testdata/config.ini")
+	const content = `; Configuration.
+	msg="Welcome \"Bob\"" ; A welcome message
+	name='http server' ;)
+
+	; Database configuration.
+	[database]
+	user = "bob" ; Maybe it's not specific enough.
+	password = password ; Don't tell the boss.
+
+	; HTTP configuration.
+	[http]
+	port=8080
+	url=example.com
+	`
+
+	c, err := Parse(strings.NewReader(content))
 	if err != nil {
 		t.Fatalf("Unexpected error opening testdata file: %q", err.Error())
 	}
@@ -116,11 +104,15 @@ func TestComplete(t *testing.T) {
 	f.Close()
 
 	tmpPath := f.Name()
-	c2, err := Load(tmpPath)
+	f2, err := os.Open(tmpPath)
+	if err != nil {
+		t.Fatalf("Unexpected error reopening the temp file: %q", err.Error())
+	}
+	c2, err := Parse(f2)
 	if err != nil {
 		t.Fatal(err)
 	}
-	f.Close()
+	f2.Close()
 
 	if !reflect.DeepEqual(c, c2) {
 		t.Fatalf("Expected %v, but got %v", c, c2)
