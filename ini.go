@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"sort"
+	"strings"
 )
 
 // Global is the section name for key-values not under a section. It is used
@@ -64,7 +65,9 @@ func (c *Config) buffer() *bytes.Buffer {
 		section := (*c)[sectionName]
 		keys := getMapsKeysAlpha(section)
 		for _, key := range keys {
-			value := section[key]
+			value := possibleQoute(section[key])
+			key = possibleQoute(key)
+
 			result.WriteString(key + "=" + value + "\n")
 		}
 		result.WriteString("\n")
@@ -184,4 +187,18 @@ func getConfigSectionsAlpha(c Config) []string {
 	}
 	sort.Strings(sections)
 	return append([]string{Global}, sections...)
+}
+
+// PossibleQoute adds qouting to key or values when needed. For example:
+//
+//	my "key" -> "my \"key\""
+//	my 'key' -> "my 'key'"
+func possibleQoute(value string) string {
+	if strings.Index(value, `"`) != -1 {
+		return `"` + strings.Replace(value, `"`, `\"`, -1) + `"`
+	} else if strings.Index(value, `'`) != -1 {
+		return `"` + value + `"`
+	}
+
+	return value
 }
