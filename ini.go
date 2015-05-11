@@ -52,6 +52,11 @@ func (c *Config) Bytes() []byte {
 	return c.buffer().Bytes()
 }
 
+// WriteTo writes the configuration to the writer in the ini format.
+func (c *Config) WriteTo(w io.Writer) (int64, error) {
+	return c.buffer().WriteTo(w)
+}
+
 // Buffer creates a `bytes.Buffer` with an ini formatted configuration.
 func (c *Config) buffer() *bytes.Buffer {
 	var result bytes.Buffer
@@ -74,11 +79,6 @@ func (c *Config) buffer() *bytes.Buffer {
 	}
 
 	return &result
-}
-
-// WriteTo writes the configuration to the writer in the ini format.
-func (c *Config) WriteTo(w io.Writer) (int64, error) {
-	return c.buffer().WriteTo(w)
 }
 
 // Scan scans a configuration into a struct or map. Any properties to be set
@@ -111,7 +111,7 @@ func (c Config) Scan(dst interface{}) error {
 	// struct we can't set/change any keys on it, in either case we can't do
 	// anything with the value.
 	if valuePtr.Kind() != reflect.Ptr || value.Kind() != reflect.Struct {
-		return errors.New("ini: ini.Config.Scan requires a pointer to struct")
+		return errors.New("ini: Config.Scan requires a pointer to struct")
 	}
 
 	for sectionName, section := range c {
