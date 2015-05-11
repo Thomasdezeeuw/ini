@@ -6,16 +6,81 @@ package ini
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
 
-func TestScan(t *testing.T) {
+// todo: test int/uint/float overflows.
+
+type completeTestData struct {
+	Str      string
+	Duration time.Duration
+	Time     time.Time
+	Bools    Bools
+	Ints     Ints
+	Uints    Uints
+	Floats   Floats
+	Slices   Slices
+}
+
+type Bools struct {
+	T1 bool
+	T2 bool
+	T3 bool
+	F1 bool
+	F2 bool
+	F3 bool
+	F4 bool
+}
+
+type Ints struct {
+	I   int
+	I8  int8
+	I16 int16
+	I32 int32
+	I64 int64
+}
+
+type Uints struct {
+	Ui   uint
+	Ui8  uint8
+	Ui16 uint16
+	Ui32 uint32
+	Ui64 uint64
+}
+
+type Floats struct {
+	F32 float32
+	F64 float64
+}
+
+type Slices struct {
+	Str      []string
+	Duration []time.Duration
+	Time     []time.Time
+	T        []bool
+	F        []bool
+	I        []int
+	I8       []int8
+	I16      []int16
+	I32      []int32
+	I64      []int64
+	Ui       []uint
+	Ui8      []uint8
+	Ui16     []uint16
+	Ui32     []uint32
+	Ui64     []uint64
+	F32      []float32
+	F64      []float64
+}
+
+func TestConfigScan(t *testing.T) {
 	c := Config{
 		Global: {
 			"str":      "string",
 			"duration": "5s",
-			"time":     "2015-05-09 11:07:30",
+			"time":     "2015-05-08 11:07:30",
 		},
 		"bools": {
 			"t1": "true",
@@ -27,724 +92,143 @@ func TestScan(t *testing.T) {
 			"f4": "anything else",
 		},
 		"ints": {
-			"i":   "1",
-			"i8":  "124",
-			"i16": "2343",
-			"i32": "3534534",
-			"i64": "53534534530",
+			"i":   "0",
+			"i8":  "127",
+			"i16": "32767",
+			"i32": "2147483647",
+			"i64": "9223372036854775807",
 		},
 		"uints": {
-			"ui":   "1",
-			"ui8":  "154",
-			"ui16": "4645",
-			"ui32": "46424535",
-			"ui64": "3234464645",
+			"ui":   "0",
+			"ui8":  "255",
+			"ui16": "65535",
+			"ui32": "4294967295",
+			"ui64": "18446744073709551615",
+		},
+		"floats": {
+			"f32": "12.21",
+			"f64": "123.321",
+		},
+		"slices": {
+			"str":      "string1, string2",
+			"duration": "10s, 20m",
+			"time":     "2015-05-10, 2015-05-09 11:07, 2015-05-08 11:07:30",
+			"t":        "true, TRUE, 1",
+			"f":        "false, FALSE, 0, anything else",
+			"i":        "1, 2, 3",
+			"i8":       "124, -125, 126",
+			"i16":      "2343, 123, -23423",
+			"i32":      "3534534, -234234, 86767",
+			"i64":      "53534534530, 65756756, 4365456",
+			"ui":       "1, 23425",
+			"ui8":      "154, 126",
+			"ui16":     "4645, 4353",
+			"ui32":     "46424535, 3453",
+			"ui64":     "3234464645, 453",
+			"f32":      "12.21, 123.21",
+			"f64":      "123.321, 4234.123",
 		},
 	}
 
-	var dst struct {
-		Str      string
-		Duration time.Duration
-		Time     time.Time
+	var got completeTestData
 
-		Bools struct {
-			T1 bool
-			T2 bool
-			T3 bool
-			F1 bool
-			F2 bool
-			F3 bool
-			F4 bool
-		}
-		Ints struct {
-			I   int
-			I8  int8
-			I16 int16
-			I32 int32
-			I64 int64
-		}
-		Uints struct {
-			Ui   uint
-			Ui8  uint8
-			Ui16 uint16
-			Ui32 uint32
-			Ui64 uint64
-		}
-	}
-
-	if err := c.Scan(&dst); err != nil {
+	if err := c.Scan(&got); err != nil {
 		t.Fatalf("Unexpected error scanning config into variable: %q", err.Error())
 	}
 
-	// todo: check for correct values.
-}
-
-// todo: combine the TestSetSlice* functions.
-// todo: test slice errors.
-func TestSetSliceString(t *testing.T) {
-	var got []string
-	expected := []string{"tag1", "tag2"}
-	input := "tag1, tag2"
-
-	f := reflect.Indirect(reflect.ValueOf(&got))
-	if err := setSlice(&f, input); err != nil {
-		t.Fatal(err)
-	}
-
-	if len(got) != len(expected) {
-		t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-			got, input, got, expected)
-	}
-
-	for i, g := range got {
-		if e := expected[i]; g != e {
-			t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-				got, input, got, expected)
+	strTimes := []string{"2015-05-10", "2015-05-09 11:07", "2015-05-08 11:07:30"}
+	var times []time.Time
+	for i, tValue := range strTimes {
+		t1, err := time.Parse(timeFormats[i], tValue)
+		if err != nil {
+			t.Fatalf("Unexpected error parsing time: %s", err.Error())
 		}
-	}
-}
-
-func TestSetSliceBool(t *testing.T) {
-	var got []bool
-	var expected = []bool{false, false, true, true}
-	input := "0, false, 1, true"
-
-	f := reflect.ValueOf(&got)
-	f = reflect.Indirect(f)
-	if err := setSlice(&f, input); err != nil {
-		t.Fatal(err)
+		times = append(times, t1)
 	}
 
-	if len(got) != len(expected) {
-		t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-			got, input, got, expected)
-	}
-
-	for i, g := range got {
-		if e := expected[i]; g != e {
-			t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-				got, input, got, expected)
-		}
-	}
-}
-
-func TestSetSliceInt(t *testing.T) {
-	var got []int
-	var expected = []int{-1, 0, 1, 10, 100}
-	input := "-1, 0, 1, 10, 100"
-
-	f := reflect.ValueOf(&got)
-	f = reflect.Indirect(f)
-	if err := setSlice(&f, input); err != nil {
-		t.Fatal(err)
-	}
-
-	if len(got) != len(expected) {
-		t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-			got, input, got, expected)
-	}
-
-	for i, g := range got {
-		if e := expected[i]; g != e {
-			t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-				got, input, got, expected)
-		}
-	}
-}
-
-func TestSetSliceInt8(t *testing.T) {
-	var got []int8
-	var expected = []int8{-1, 0, 1, 10, 100}
-	input := "-1, 0, 1, 10, 100"
-
-	f := reflect.ValueOf(&got)
-	f = reflect.Indirect(f)
-	if err := setSlice(&f, input); err != nil {
-		t.Fatal(err)
-	}
-
-	if len(got) != len(expected) {
-		t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-			got, input, got, expected)
-	}
-
-	for i, g := range got {
-		if e := expected[i]; g != e {
-			t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-				got, input, got, expected)
-		}
-	}
-}
-
-func TestSetSliceInt16(t *testing.T) {
-	var got []int16
-	var expected = []int16{-1, 0, 1, 10, 100}
-	input := "-1, 0, 1, 10, 100"
-
-	f := reflect.ValueOf(&got)
-	f = reflect.Indirect(f)
-	if err := setSlice(&f, input); err != nil {
-		t.Fatal(err)
-	}
-
-	if len(got) != len(expected) {
-		t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-			got, input, got, expected)
-	}
-
-	for i, g := range got {
-		if e := expected[i]; g != e {
-			t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-				got, input, got, expected)
-		}
-	}
-}
-
-func TestSetSliceInt32(t *testing.T) {
-	var got []int32
-	var expected = []int32{-1, 0, 1, 10, 100}
-	input := "-1, 0, 1, 10, 100"
-
-	f := reflect.ValueOf(&got)
-	f = reflect.Indirect(f)
-	if err := setSlice(&f, input); err != nil {
-		t.Fatal(err)
-	}
-
-	if len(got) != len(expected) {
-		t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-			got, input, got, expected)
-	}
-
-	for i, g := range got {
-		if e := expected[i]; g != e {
-			t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-				got, input, got, expected)
-		}
-	}
-}
-
-func TestSetSliceInt64(t *testing.T) {
-	var got []int64
-	var expected = []int64{-1, 0, 1, 10, 100}
-	input := "-1, 0, 1, 10, 100"
-
-	f := reflect.ValueOf(&got)
-	f = reflect.Indirect(f)
-	if err := setSlice(&f, input); err != nil {
-		t.Fatal(err)
-	}
-
-	if len(got) != len(expected) {
-		t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-			got, input, got, expected)
-	}
-
-	for i, g := range got {
-		if e := expected[i]; g != e {
-			t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-				got, input, got, expected)
-		}
-	}
-}
-
-func TestSetSliceUint(t *testing.T) {
-	var got []uint
-	var expected = []uint{0, 1, 10, 100}
-	input := "0, 1, 10, 100"
-
-	f := reflect.ValueOf(&got)
-	f = reflect.Indirect(f)
-	if err := setSlice(&f, input); err != nil {
-		t.Fatal(err)
-	}
-
-	if len(got) != len(expected) {
-		t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-			got, input, got, expected)
-	}
-
-	for i, g := range got {
-		if e := expected[i]; g != e {
-			t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-				got, input, got, expected)
-		}
-	}
-}
-
-func TestSetSliceUint8(t *testing.T) {
-	var got []uint8
-	var expected = []uint8{0, 1, 10, 100}
-	input := "0, 1, 10, 100"
-
-	f := reflect.ValueOf(&got)
-	f = reflect.Indirect(f)
-	if err := setSlice(&f, input); err != nil {
-		t.Fatal(err)
-	}
-
-	if len(got) != len(expected) {
-		t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-			got, input, got, expected)
-	}
-
-	for i, g := range got {
-		if e := expected[i]; g != e {
-			t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-				got, input, got, expected)
-		}
-	}
-}
-
-func TestSetSliceUint16(t *testing.T) {
-	var got []uint16
-	var expected = []uint16{0, 1, 10, 100}
-	input := "0, 1, 10, 100"
-
-	f := reflect.ValueOf(&got)
-	f = reflect.Indirect(f)
-	if err := setSlice(&f, input); err != nil {
-		t.Fatal(err)
-	}
-
-	if len(got) != len(expected) {
-		t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-			got, input, got, expected)
-	}
-
-	for i, g := range got {
-		if e := expected[i]; g != e {
-			t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-				got, input, got, expected)
-		}
-	}
-}
-
-func TestSetSliceUint32(t *testing.T) {
-	var got []uint32
-	var expected = []uint32{0, 1, 10, 100}
-	input := "0, 1, 10, 100"
-
-	f := reflect.ValueOf(&got)
-	f = reflect.Indirect(f)
-	if err := setSlice(&f, input); err != nil {
-		t.Fatal(err)
-	}
-
-	if len(got) != len(expected) {
-		t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-			got, input, got, expected)
-	}
-
-	for i, g := range got {
-		if e := expected[i]; g != e {
-			t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-				got, input, got, expected)
-		}
-	}
-}
-
-func TestSetSliceUint64(t *testing.T) {
-	var got []uint64
-	var expected = []uint64{0, 1, 10, 100}
-	input := "0, 1, 10, 100"
-
-	f := reflect.ValueOf(&got)
-	f = reflect.Indirect(f)
-	if err := setSlice(&f, input); err != nil {
-		t.Fatal(err)
-	}
-
-	if len(got) != len(expected) {
-		t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-			got, input, got, expected)
-	}
-
-	for i, g := range got {
-		if e := expected[i]; g != e {
-			t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-				got, input, got, expected)
-		}
-	}
-}
-
-func TestSetSliceUintptr(t *testing.T) {
-	var got []uintptr
-	var expected = []uintptr{0, 1, 10, 100}
-	input := "0, 1, 10, 100"
-
-	f := reflect.ValueOf(&got)
-	f = reflect.Indirect(f)
-	if err := setSlice(&f, input); err != nil {
-		t.Fatal(err)
-	}
-
-	if len(got) != len(expected) {
-		t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-			got, input, got, expected)
-	}
-
-	for i, g := range got {
-		if e := expected[i]; g != e {
-			t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-				got, input, got, expected)
-		}
-	}
-}
-
-func TestSetSliceFloat32(t *testing.T) {
-	var got []float32
-	var expected = []float32{-1.0, 0.0, 1.0, 10.0, 100.0}
-	input := "-1.0, 0.0, 1.0, 10.0, 100.0"
-
-	f := reflect.ValueOf(&got)
-	f = reflect.Indirect(f)
-	if err := setSlice(&f, input); err != nil {
-		t.Fatal(err)
-	}
-
-	if len(got) != len(expected) {
-		t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-			got, input, got, expected)
-	}
-
-	for i, g := range got {
-		if e := expected[i]; g != e {
-			t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-				got, input, got, expected)
-		}
-	}
-}
-
-func TestSetSliceFloat64(t *testing.T) {
-	var got []float64
-	var expected = []float64{-1.0, 0.0, 1.0, 10.0, 100.0}
-	input := "-1.0, 0.0, 1.0, 10.0, 100.0"
-
-	f := reflect.ValueOf(&got)
-	f = reflect.Indirect(f)
-	if err := setSlice(&f, input); err != nil {
-		t.Fatal(err)
-	}
-
-	if len(got) != len(expected) {
-		t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-			got, input, got, expected)
-	}
-
-	for i, g := range got {
-		if e := expected[i]; g != e {
-			t.Fatalf("Expected setSlice(%v, %q) to return %v, got %v",
-				got, input, got, expected)
-		}
-	}
-}
-
-func TestConfigScan(t *testing.T) {
-	var got struct {
-		True     bool // "1"
-		True2    bool // "true"
-		False    bool // "0"
-		False2   bool // "false"
-		Float32  float32
-		Float64  float64
-		String   string
-		Time     time.Time
-		Duration time.Duration
-		Slice    []string
-		Ints     struct {
-			Int   int
-			Int8  int8
-			Int16 int16
-			Int32 int32
-			Int64 int64
-		}
-		Uints struct {
-			Uint    uint
-			Uint8   uint8
-			Uint16  uint16
-			Uint32  uint32
-			Uint64  uint64
-			Uintptr uintptr
-		}
-	}
-
-	c := Config{
-		Global: {
-			"NotInStruct": ":(",
-			"True":        "1",
-			"True2":       "true",
-			"False":       "0",
-			"False2":      "false",
-			"Float32":     "1.00",
-			"Float64":     "2.00",
-			"String":      "string",
-			"Time":        "2015-04-05 17:47",
-			"Duration":    "5s",
-			"Slice":       "string1, string2",
+	expected := completeTestData{
+		Str:      "string",
+		Duration: 5 * time.Second,
+		Time:     times[2],
+		Bools: Bools{
+			T1: true,
+			T2: true,
+			T3: true,
+			F1: false,
+			F2: false,
+			F3: false,
+			F4: false,
 		},
-		"Ints": {
-			"Int":   "-1",
-			"Int8":  "10",
-			"Int16": "-100",
-			"Int32": "1000",
-			"Int64": "-10000",
+		Ints: Ints{
+			I:   0,
+			I8:  127,
+			I16: 32767,
+			I32: 2147483647,
+			I64: 9223372036854775807,
 		},
-		"Uints": {
-			"Uint":   "1",
-			"Uint8":  "10",
-			"Uint16": "100",
-			"Uint32": "1000",
-			"Uint64": "10000",
+		Uints: Uints{
+			Ui:   0,
+			Ui8:  255,
+			Ui16: 65535,
+			Ui32: 4294967295,
+			Ui64: 18446744073709551615,
+		},
+		Floats: Floats{
+			F32: 12.21,
+			F64: 123.321,
+		},
+		Slices: Slices{
+			Str:      []string{"string1", "string2"},
+			Duration: []time.Duration{10 * time.Second, 20 * time.Minute},
+			Time:     times,
+			T:        []bool{true, true, true},
+			F:        []bool{false, false, false, false},
+			I:        []int{1, 2, 3},
+			I8:       []int8{124, -125, 126},
+			I16:      []int16{2343, 123, -23423},
+			I32:      []int32{3534534, -234234, 86767},
+			I64:      []int64{53534534530, 65756756, 4365456},
+			Ui:       []uint{1, 23425},
+			Ui8:      []uint8{154, 126},
+			Ui16:     []uint16{4645, 4353},
+			Ui32:     []uint32{46424535, 3453},
+			Ui64:     []uint64{3234464645, 453},
+			F32:      []float32{12.21, 123.21},
+			F64:      []float64{123.321, 4234.123},
 		},
 	}
 
-	if err := c.Scan(&got); err != nil {
-		t.Fatal(err)
-	}
-
-	// todo: improve these checks.. kind of repetitive
-	if expected := true; got.True != expected {
-		t.Fatalf("Expected got.True to be %t, got %t", expected, got.True)
-	}
-
-	if expected := true; got.True2 != expected {
-		t.Fatalf("Expected got.True2 to be %t, got %t", expected, got.True2)
-	}
-
-	if expected := false; got.False != expected {
-		t.Fatalf("Expected got.False to be %t, got %t", expected, got.False)
-	}
-
-	if expected := false; got.False2 != expected {
-		t.Fatalf("Expected got.False2 to be %t, got %t", expected, got.False2)
-	}
-
-	if expected := float32(1.00); got.Float32 != expected {
-		t.Fatalf("Expected got.Float32 to be %f, got %f", expected, got.Float32)
-	}
-
-	if expected := float64(2.00); got.Float64 != expected {
-		t.Fatalf("Expected got.Float64 to be %f, got %f", expected, got.Float64)
-	}
-
-	if expected := "string"; got.String != expected {
-		t.Fatalf("Expected got.String to be %q, got %q", expected, got.String)
-	}
-
-	if expected, _ := time.Parse("2006-01-02 15:04", "2015-04-05 17:47"); got.Time != expected {
-		t.Fatalf("Expected got.Time to be %v, got %v", expected, got.Time)
-	}
-
-	if expected := 5 * time.Second; got.Duration != expected {
-		t.Fatalf("Expected got.Duration to be %v, got %v", expected, got.Duration)
-	}
-
-	if expected := []string{"string1", "string2"}; got.Slice[0] != expected[0] || got.Slice[1] != expected[1] {
-		t.Fatalf("Expected got.Slice to be %v, got %v", expected, got.Slice)
-	}
-
-	if expected := -1; got.Ints.Int != expected {
-		t.Fatalf("Expected got.Ints.Int to be %d, got %d", expected, got.Ints.Int)
-	}
-
-	if expected := int8(10); got.Ints.Int8 != expected {
-		t.Fatalf("Expected got.Ints.Int8 to be %d, got %d", expected, got.Ints.Int8)
-	}
-
-	if expected := int16(-100); got.Ints.Int16 != expected {
-		t.Fatalf("Expected got.Ints.Int16 to be %d, got %d", expected, got.Ints.Int16)
-	}
-
-	if expected := int32(1000); got.Ints.Int32 != expected {
-		t.Fatalf("Expected got.Ints.Int32 to be %d, got %d", expected, got.Ints.Int32)
-	}
-
-	if expected := int64(-10000); got.Ints.Int64 != expected {
-		t.Fatalf("Expected got.Ints.Int64 to be %d, got %d", expected, got.Ints.Int64)
-	}
-
-	if expected := uint(1); got.Uints.Uint != expected {
-		t.Fatalf("Expected got.Uints.Uint to be %d, got %d", expected, got.Uints.Uint)
-	}
-
-	if expected := uint8(10); got.Uints.Uint8 != expected {
-		t.Fatalf("Expected got.Uints.Uint8 to be %d, got %d", expected, got.Uints.Uint8)
-	}
-
-	if expected := uint16(100); got.Uints.Uint16 != expected {
-		t.Fatalf("Expected got.Uints.Uint16 to be %d, got %d", expected, got.Uints.Uint16)
-	}
-
-	if expected := uint32(1000); got.Uints.Uint32 != expected {
-		t.Fatalf("Expected got.Uints.Uint32 to be %d, got %d", expected, got.Uints.Uint32)
-	}
-
-	if expected := uint64(10000); got.Uints.Uint64 != expected {
-		t.Fatalf("Expected got.Uints.Uint64 to be %d, got %d", expected, got.Uints.Uint64)
+	if !reflect.DeepEqual(got, expected) {
+		t.Fatalf("Expected Config.Scan() to return %v, but got %v", expected, got)
 	}
 }
 
-func TestScanOLD(t *testing.T) {
-	t.Skip()
-	var dst struct {
-		Name string
-		Msg  string
-		Http struct {
-			Port int
-			Url  string
-		}
-		Database struct {
-			User     string
-			Password string
-		}
-	}
-
-	if err := Scan("testdata/config.ini", &dst); err != nil {
-		t.Fatal(err)
-	}
-
-	if expected := "http server"; dst.Name != expected {
-		t.Fatalf("Expected dst.Name to be %q, got %q", expected, dst.Name)
-	}
-	if expected := "Welcome \"Bob\""; dst.Msg != expected {
-		t.Fatalf("Expected dst.Msg to be %q, got %q", expected, dst.Msg)
-	}
-	if expected := 8080; dst.Http.Port != expected {
-		t.Fatalf("Expected dst.Http.Port to be %d, got %d", expected, dst.Http.Port)
-	}
-	if expected := "example.com"; dst.Http.Url != expected {
-		t.Fatalf("Expected dst.Http.Url to be %q, got %q", expected, dst.Http.Url)
-	}
-	if expected := "bob"; dst.Database.User != expected {
-		t.Fatalf("Expected dst.Database.User to be %q, got %q", expected, dst.Database.User)
-	}
-	if expected := "password"; dst.Database.Password != expected {
-		t.Fatalf("Expected dst.Database.Password to be %q, got %q", expected, dst.Database.Password)
-	}
+type smallTestData struct {
+	Key     string
+	Section smallSection
 }
 
-// todo: combine the TestConfigScan*Error functions.
-func TestConfigScanError(t *testing.T) {
-	var got struct{}
-	c := Config{}
-
-	err := c.Scan(got)
-	if err == nil {
-		t.Fatal("Expected an error but didn't get one")
-	}
-
-	if expected := "ini: ini.Config.Scan requires a pointer to struct"; err.Error() != expected {
-		t.Fatalf("Expected the error to be %q, but got %q", expected, err.Error())
-	}
+type smallSection struct {
+	Key2 string
 }
 
-func TestConfigScanDurationError(t *testing.T) {
-	var got struct {
-		Duration time.Duration
+func TestScan(t *testing.T) {
+	content := "key = value\n[section]\nkey2=value2"
+
+	var got smallTestData
+
+	if err := Scan(strings.NewReader(content), &got); err != nil {
+		t.Fatalf("Unexpected error scanning: %q", err.Error())
 	}
 
-	c := Config{
-		Global: {
-			"Duration": "bad",
+	expected := smallTestData{
+		Key: "value",
+		Section: smallSection{
+			Key2: "value2",
 		},
 	}
 
-	err := c.Scan(&got)
-	if err == nil {
-		t.Fatal("Expected an error but didn't get one")
-	}
-
-	expected := `ini: error scanning "Duration" in section "Global": can't convert "bad" to type time.Duration`
-	if err.Error() != expected {
-		t.Fatalf("Expected the error to be %q, but got %q", expected, err.Error())
-	}
-}
-
-func TestConfigScanTimeError(t *testing.T) {
-	var got struct {
-		Time time.Time
-	}
-
-	c := Config{
-		Global: {
-			"Time": "bad",
-		},
-	}
-
-	err := c.Scan(&got)
-	if err == nil {
-		t.Fatal("Expected an error but didn't get one")
-	}
-
-	expected := `ini: error scanning "Time" in section "Global": can't convert "bad" to type time.Time`
-	if err.Error() != expected {
-		t.Fatalf("Expected the error to be %q, but got %q", expected, err.Error())
-	}
-}
-
-func TestConfigScanIntError(t *testing.T) {
-	var got struct {
-		Int int
-	}
-
-	c := Config{
-		Global: {
-			"Int": "bad",
-		},
-	}
-
-	err := c.Scan(&got)
-	if err == nil {
-		t.Fatal("Expected an error but didn't get one")
-	}
-
-	expected := `ini: error scanning "Int" in section "Global": can't convert "bad" to type int`
-	if err.Error() != expected {
-		t.Fatalf("Expected the error to be %q, but got %q", expected, err.Error())
-	}
-}
-
-func TestConfigScanUintError(t *testing.T) {
-	var got struct {
-		Uint uint
-	}
-
-	c := Config{
-		Global: {
-			"Uint": "bad",
-		},
-	}
-
-	err := c.Scan(&got)
-	if err == nil {
-		t.Fatal("Expected an error but didn't get one")
-	}
-
-	expected := `ini: error scanning "Uint" in section "Global": can't convert "bad" to type uint`
-	if err.Error() != expected {
-		t.Fatalf("Expected the error to be %q, but got %q", expected, err.Error())
-	}
-}
-
-func TestConfigScanFloatError(t *testing.T) {
-	var got struct {
-		Float float32
-	}
-
-	c := Config{
-		Global: {
-			"Float": "bad",
-		},
-	}
-
-	err := c.Scan(&got)
-	if err == nil {
-		t.Fatal("Expected an error but didn't get one")
-	}
-
-	expected := `ini: error scanning "Float" in section "Global": can't convert "bad" to type float32`
-	if err.Error() != expected {
-		t.Fatalf("Expected the error to be %q, but got %q", expected, err.Error())
+	if !reflect.DeepEqual(got, expected) {
+		t.Fatalf("Expected %v, but got %v", got, expected)
 	}
 }

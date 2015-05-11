@@ -6,7 +6,6 @@ package ini
 
 import (
 	"fmt"
-	"math"
 	"io"
 	"reflect"
 	"strconv"
@@ -47,7 +46,6 @@ func setReflectValue(keyValue *reflect.Value, value string) error {
 		return setSlice(keyValue, value)
 	}
 
-	// todo: (maybe) add map and struct (convert to a section maybe?).
 	switch keyValue.Type() {
 	case typeString:
 		keyValue.SetString(value)
@@ -69,176 +67,58 @@ func setReflectValue(keyValue *reflect.Value, value string) error {
 }
 
 // SetSlice sets a slice of reflected value.
-func setSlice(f *reflect.Value, value string) error {
-	if !f.IsValid() || !f.CanSet() {
-		return nil
+func setSlice(keyValue *reflect.Value, value string) error {
+	values := getValues(value)
+
+	// Type of the slice elements.
+	switch keyValue.Type().Elem() {
+	case typeString:
+		keyValue.Set(reflect.ValueOf(values))
+	case typeBool:
+		return setBools(keyValue, values)
+	case typeInt:
+		return setInts(keyValue, values)
+	case typeInt8:
+		return setInt8s(keyValue, values)
+	case typeInt16:
+		return setInt16s(keyValue, values)
+	case typeInt32:
+		return setInt32s(keyValue, values)
+	case typeInt64:
+		return setInt64s(keyValue, values)
+	case typeUint:
+		return setUints(keyValue, values)
+	case typeUint8:
+		return setUint8s(keyValue, values)
+	case typeUint16:
+		return setUint16s(keyValue, values)
+	case typeUint32:
+		return setUint32s(keyValue, values)
+	case typeUint64:
+		return setUint64s(keyValue, values)
+	case typeFloat32:
+		return setFloat32s(keyValue, values)
+	case typeFloat64:
+		return setFloat64s(keyValue, values)
+	case typeDuration:
+		return setDurations(keyValue, values)
+	case typeTime:
+		return setTimes(keyValue, values)
 	}
 
-	values := strings.Split(value, ",")
+	return nil
+}
+
+func setBools(keyValue *reflect.Value, values []string) error {
+	var bs = make([]bool, len(values))
 	for i, value := range values {
-		values[i] = strings.TrimSpace(value)
+		bValue := reflect.Indirect(reflect.ValueOf(&bs[i]))
+		if err := setBool(&bValue, value); err != nil {
+			return err
+		}
 	}
-
-	// todo: clean up switch
-	switch f.Type().Elem().Kind() {
-	case reflect.String:
-		f.Set(reflect.ValueOf(values))
-	case reflect.Bool:
-		var bs []bool
-		for _, value := range values {
-			bs = append(bs, parseBool(value))
-		}
-		f.Set(reflect.ValueOf(bs))
-	case reflect.Int:
-		var ints []int
-		for _, value := range values {
-			i, err := strconv.Atoi(value)
-			if err != nil {
-				return err
-			}
-			ints = append(ints, i)
-		}
-		f.Set(reflect.ValueOf(ints))
-	case reflect.Int8:
-		var ints []int8
-		for _, value := range values {
-			i, err := strconv.Atoi(value)
-			if err != nil {
-				return err
-			} else if i > math.MaxInt8 || i < math.MinInt8 {
-				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
-			}
-			ints = append(ints, int8(i))
-		}
-		f.Set(reflect.ValueOf(ints))
-	case reflect.Int16:
-		var ints []int16
-		for _, value := range values {
-			i, err := strconv.Atoi(value)
-			if err != nil {
-				return err
-			} else if i > math.MaxInt16 || i < math.MinInt16 {
-				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
-			}
-			ints = append(ints, int16(i))
-		}
-		f.Set(reflect.ValueOf(ints))
-	case reflect.Int32:
-		var ints []int32
-		for _, value := range values {
-			i, err := strconv.Atoi(value)
-			if err != nil {
-				return err
-			} else if i > math.MaxInt32 || i < math.MinInt32 {
-				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
-			}
-			ints = append(ints, int32(i))
-		}
-		f.Set(reflect.ValueOf(ints))
-	case reflect.Int64:
-		var ints []int64
-		for _, value := range values {
-			i, err := strconv.Atoi(value)
-			if err != nil {
-				return err
-			}
-			ints = append(ints, int64(i))
-		}
-		f.Set(reflect.ValueOf(ints))
-	case reflect.Uint:
-		var is []uint
-		for _, value := range values {
-			i, err := strconv.Atoi(value)
-			if err != nil {
-				return err
-			} else if i < 0 {
-				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
-			}
-			is = append(is, uint(i))
-		}
-		f.Set(reflect.ValueOf(is))
-	case reflect.Uint8:
-		var is []uint8
-		for _, value := range values {
-			i, err := strconv.Atoi(value)
-			if err != nil {
-				return err
-			} else if i > math.MaxUint8 || i < 0 {
-				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
-			}
-			is = append(is, uint8(i))
-		}
-		f.Set(reflect.ValueOf(is))
-	case reflect.Uint16:
-		var is []uint16
-		for _, value := range values {
-			i, err := strconv.Atoi(value)
-			if err != nil {
-				return err
-			} else if i > math.MaxUint16 || i < 0 {
-				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
-			}
-			is = append(is, uint16(i))
-		}
-		f.Set(reflect.ValueOf(is))
-	case reflect.Uint32:
-		var is []uint32
-		for _, value := range values {
-			i, err := strconv.Atoi(value)
-			if err != nil {
-				return err
-			} else if i > math.MaxUint32 || i < 0 {
-				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
-			}
-			is = append(is, uint32(i))
-		}
-		f.Set(reflect.ValueOf(is))
-	case reflect.Uint64:
-		var is []uint64
-		for _, value := range values {
-			i, err := strconv.Atoi(value)
-			if err != nil {
-				return err
-			}
-			is = append(is, uint64(i))
-		}
-		f.Set(reflect.ValueOf(is))
-	case reflect.Uintptr:
-		var is []uintptr
-		for _, value := range values {
-			i, err := strconv.Atoi(value)
-			if err != nil {
-				return err
-			} else if i > math.MaxUint8 || i < 0 {
-				return fmt.Errorf("ini: %d overflows %q", i, f.Type().Elem().Kind())
-			}
-			is = append(is, uintptr(i))
-		}
-		f.Set(reflect.ValueOf(is))
-	case reflect.Float32:
-		var fs []float32
-		for _, value := range values {
-			fv, err := strconv.ParseFloat(value, 64)
-			if err != nil {
-				return err
-			} else if fv > math.MaxFloat32 {
-				return fmt.Errorf("ini: %f overflows %q", fv, f.Type().Elem().Kind())
-			}
-			fs = append(fs, float32(fv))
-		}
-		f.Set(reflect.ValueOf(fs))
-	case reflect.Float64:
-		var fs []float64
-		for _, value := range values {
-			f, err := strconv.ParseFloat(value, 64)
-			if err != nil {
-				return err
-			}
-			fs = append(fs, f)
-		}
-		f.Set(reflect.ValueOf(fs))
-	}
-
+	bsValue := reflect.ValueOf(bs)
+	keyValue.Set(bsValue)
 	return nil
 }
 
@@ -253,33 +133,190 @@ func setBool(keyValue *reflect.Value, value string) error {
 	return nil
 }
 
+func setInts(keyValue *reflect.Value, values []string) error {
+	var ns = make([]int, len(values))
+	for i, value := range values {
+		nValue := reflect.Indirect(reflect.ValueOf(&ns[i]))
+		if err := setInt(&nValue, value); err != nil {
+			return err
+		}
+	}
+	nsValue := reflect.ValueOf(ns)
+	keyValue.Set(nsValue)
+	return nil
+}
+
+func setInt8s(keyValue *reflect.Value, values []string) error {
+	var ns = make([]int8, len(values))
+	for i, value := range values {
+		nValue := reflect.Indirect(reflect.ValueOf(&ns[i]))
+		if err := setInt(&nValue, value); err != nil {
+			return err
+		}
+	}
+	nsValue := reflect.ValueOf(ns)
+	keyValue.Set(nsValue)
+	return nil
+}
+
+func setInt16s(keyValue *reflect.Value, values []string) error {
+	var ns = make([]int16, len(values))
+	for i, value := range values {
+		nValue := reflect.Indirect(reflect.ValueOf(&ns[i]))
+		if err := setInt(&nValue, value); err != nil {
+			return err
+		}
+	}
+	nsValue := reflect.ValueOf(ns)
+	keyValue.Set(nsValue)
+	return nil
+}
+
+func setInt32s(keyValue *reflect.Value, values []string) error {
+	var ns = make([]int32, len(values))
+	for i, value := range values {
+		nValue := reflect.Indirect(reflect.ValueOf(&ns[i]))
+		if err := setInt(&nValue, value); err != nil {
+			return err
+		}
+	}
+	nsValue := reflect.ValueOf(ns)
+	keyValue.Set(nsValue)
+	return nil
+}
+
+func setInt64s(keyValue *reflect.Value, values []string) error {
+	var ns = make([]int64, len(values))
+	for i, value := range values {
+		nValue := reflect.Indirect(reflect.ValueOf(&ns[i]))
+		if err := setInt(&nValue, value); err != nil {
+			return err
+		}
+	}
+	nsValue := reflect.ValueOf(ns)
+	keyValue.Set(nsValue)
+	return nil
+}
+
 func setInt(keyValue *reflect.Value, value string) error {
-	i, err := strconv.Atoi(value)
+	n, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
 		return createConvertError(value, keyValue.Kind().String())
 	}
-	i64 := int64(i)
+	n64 := int64(n)
 
-	if keyValue.OverflowInt(i64) {
+	if keyValue.OverflowInt(n64) {
 		createOverflowError(value, keyValue.Kind().String())
 	}
 
-	keyValue.SetInt(i64)
+	keyValue.SetInt(n64)
+	return nil
+}
+
+func setUints(keyValue *reflect.Value, values []string) error {
+	var ns = make([]uint, len(values))
+	for i, value := range values {
+		nValue := reflect.Indirect(reflect.ValueOf(&ns[i]))
+		if err := setUint(&nValue, value); err != nil {
+			return err
+		}
+	}
+	nsValue := reflect.ValueOf(ns)
+	keyValue.Set(nsValue)
+	return nil
+}
+
+func setUint8s(keyValue *reflect.Value, values []string) error {
+	var ns = make([]uint8, len(values))
+	for i, value := range values {
+		nValue := reflect.Indirect(reflect.ValueOf(&ns[i]))
+		if err := setUint(&nValue, value); err != nil {
+			return err
+		}
+	}
+	nsValue := reflect.ValueOf(ns)
+	keyValue.Set(nsValue)
+	return nil
+}
+
+func setUint16s(keyValue *reflect.Value, values []string) error {
+	var ns = make([]uint16, len(values))
+	for i, value := range values {
+		nValue := reflect.Indirect(reflect.ValueOf(&ns[i]))
+		if err := setUint(&nValue, value); err != nil {
+			return err
+		}
+	}
+	nsValue := reflect.ValueOf(ns)
+	keyValue.Set(nsValue)
+	return nil
+}
+
+func setUint32s(keyValue *reflect.Value, values []string) error {
+	var ns = make([]uint32, len(values))
+	for i, value := range values {
+		nValue := reflect.Indirect(reflect.ValueOf(&ns[i]))
+		if err := setUint(&nValue, value); err != nil {
+			return err
+		}
+	}
+	nsValue := reflect.ValueOf(ns)
+	keyValue.Set(nsValue)
+	return nil
+}
+
+func setUint64s(keyValue *reflect.Value, values []string) error {
+	var ns = make([]uint64, len(values))
+	for i, value := range values {
+		nValue := reflect.Indirect(reflect.ValueOf(&ns[i]))
+		if err := setUint(&nValue, value); err != nil {
+			return err
+		}
+	}
+	nsValue := reflect.ValueOf(ns)
+	keyValue.Set(nsValue)
 	return nil
 }
 
 func setUint(keyValue *reflect.Value, value string) error {
-	i, err := strconv.Atoi(value)
+	n, err := strconv.ParseUint(value, 10, 64)
 	if err != nil {
+		fmt.Println(err.Error())
 		return createConvertError(value, keyValue.Kind().String())
 	}
-	ui64 := uint64(i)
+	nu64 := uint64(n)
 
-	if keyValue.OverflowUint(ui64) {
+	if keyValue.OverflowUint(nu64) {
 		createOverflowError(value, keyValue.Kind().String())
 	}
 
-	keyValue.SetUint(ui64)
+	keyValue.SetUint(nu64)
+	return nil
+}
+
+func setFloat32s(keyValue *reflect.Value, values []string) error {
+	var fs = make([]float32, len(values))
+	for i, value := range values {
+		fValue := reflect.Indirect(reflect.ValueOf(&fs[i]))
+		if err := setFloat(&fValue, value); err != nil {
+			return err
+		}
+	}
+	fsValue := reflect.ValueOf(fs)
+	keyValue.Set(fsValue)
+	return nil
+}
+
+func setFloat64s(keyValue *reflect.Value, values []string) error {
+	var fs = make([]float64, len(values))
+	for i, value := range values {
+		fValue := reflect.Indirect(reflect.ValueOf(&fs[i]))
+		if err := setFloat(&fValue, value); err != nil {
+			return err
+		}
+	}
+	fsValue := reflect.ValueOf(fs)
+	keyValue.Set(fsValue)
 	return nil
 }
 
@@ -297,6 +334,19 @@ func setFloat(keyValue *reflect.Value, value string) error {
 	return nil
 }
 
+func setDurations(keyValue *reflect.Value, values []string) error {
+	var ds = make([]time.Duration, len(values))
+	for i, value := range values {
+		dValue := reflect.Indirect(reflect.ValueOf(&ds[i]))
+		if err := setDuration(&dValue, value); err != nil {
+			return err
+		}
+	}
+	dsValue := reflect.ValueOf(ds)
+	keyValue.Set(dsValue)
+	return nil
+}
+
 func setDuration(keyValue *reflect.Value, value string) error {
 	duration, err := time.ParseDuration(value)
 	if err != nil {
@@ -305,6 +355,19 @@ func setDuration(keyValue *reflect.Value, value string) error {
 
 	durationValue := reflect.ValueOf(duration)
 	keyValue.Set(durationValue)
+	return nil
+}
+
+func setTimes(keyValue *reflect.Value, values []string) error {
+	var ts = make([]time.Time, len(values))
+	for i, value := range values {
+		tValue := reflect.Indirect(reflect.ValueOf(&ts[i]))
+		if err := setTime(&tValue, value); err != nil {
+			return err
+		}
+	}
+	tsValue := reflect.ValueOf(ts)
+	keyValue.Set(tsValue)
 	return nil
 }
 

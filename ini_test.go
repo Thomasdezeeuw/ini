@@ -5,9 +5,9 @@
 package ini
 
 import (
-	"errors"
 	"io/ioutil"
 	"os"
+	"reflect"
 	"testing"
 )
 
