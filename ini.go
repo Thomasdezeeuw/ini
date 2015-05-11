@@ -27,9 +27,6 @@ const Global = global
 // of the constant.
 const global = "SUPERGLOBAL"
 
-var timeFormats = []string{"2006-01-02", "2006-01-02 15:04",
-	"2006-01-02 15:04:05"}
-
 // Config holds all key-value pairs under sections. To retrieve keys use:
 //
 //	value, found := config["section"]["key"]
