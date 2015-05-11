@@ -98,7 +98,7 @@ func (c *Config) buffer() *bytes.Buffer {
 //
 // *Note underneath Scan uses the reflect package which isn't great for
 // performance, so use it with care.
-func (c Config) Scan(dst interface{}) error {
+func (c *Config) Scan(dst interface{}) error {
 	valuePtr := reflect.ValueOf(dst)
 	value := reflect.Indirect(valuePtr)
 
@@ -109,7 +109,7 @@ func (c Config) Scan(dst interface{}) error {
 		return errors.New("ini: Config.Scan requires a pointer to struct")
 	}
 
-	for sectionName, section := range c {
+	for sectionName, section := range *c {
 		sectionValue := getSectionValue(value, sectionName)
 		if !sectionValue.IsValid() || sectionValue.Kind() != reflect.Struct {
 			continue
