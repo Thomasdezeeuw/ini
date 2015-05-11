@@ -4,8 +4,6 @@
 
 package ini
 
-// todo: test io stuff: http://localhost:6060/pkg/testing/iotest/.
-
 import (
 	"reflect"
 	"strings"
