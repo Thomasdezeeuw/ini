@@ -103,54 +103,30 @@ func TestLoad(t *testing.T) {
 }
 
 func TestComplete(t *testing.T) {
-	t.Skip()
 	c, err := Load("testdata/config.ini")
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Unexpected error opening testdata file: %q", err.Error())
 	}
 
-	// Create a temp file
-	tmpF, err := ioutil.TempFile("", "INI-TEST")
+	f, err := ioutil.TempFile("", "ini")
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Unexpected error opening tempfile: %q", err.Error())
 	}
+	c.WriteTo(f)
+	f.Close()
 
-	tmpPath := tmpF.Name()
-
-	// Write our config and close the file
-	tmpF.WriteString(c.String())
-	tmpF.Close()
-
-	// Reopen the tmp config
-	f, err := os.Open(tmpPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Parse the temp config file
-	c2, err := Parse(f)
+	tmpPath := f.Name()
+	c2, err := Load(tmpPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 	f.Close()
 
-	// Compare configurations
-	if len(c) != len(c2) {
-		t.Fatalf("Length doesn't match, got %d and %d", len(c), len(c2))
+	if !reflect.DeepEqual(c, c2) {
+		t.Fatalf("Expected %v, but got %v", c, c2)
 	}
 
-	for sectionName, loadedSection := range c {
-		for key, loadedValue := range loadedSection {
-			parsedValue := c2[sectionName][key]
-			if loadedValue != parsedValue {
-				t.Fatalf("Expected, in section %q, the keys %q to be the same, but got %q and %q",
-					sectionName, key, loadedValue, parsedValue)
-			}
-		}
-	}
-
-	// Cleanup
 	if err := os.Remove(tmpPath); err != nil {
-		t.Fatal(err)
+		t.Fatalf("Unexpected error removing tempfile: %q", err.Error())
 	}
 }
