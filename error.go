@@ -26,3 +26,11 @@ func IsSynthaxError(err error) bool {
 	return ok
 }
 
+func createOverflowError(value, t string) error {
+	return fmt.Errorf("can't convert %q to type %s, it overflows type %s",
+		value, t, t)
+}
+
+func createConvertError(value, t string) error {
+	return fmt.Errorf("can't convert %q to type %s", value, t)
+}

@@ -29,3 +29,21 @@ func TestIsSynthaxError(t *testing.T) {
 		t.Fatalf("Expected synthax error to return true on synthax errors")
 	}
 }
+
+func TestCreateOverflowError(t *testing.T) {
+	err := createOverflowError("5000", "int8")
+	expected := `can't convert "5000" to type int8, it overflows type int8`
+	if err.Error() != expected {
+		t.Fatalf("Expected the error message error to be %q, but got %q",
+			expected, err.Error())
+	}
+}
+
+func TestCreateConvertError(t *testing.T) {
+	err := createConvertError("string", "int8")
+	expected := `can't convert "string" to type int8`
+	if err.Error() != expected {
+		t.Fatalf("Expected the error message error to be %q, but got %q",
+			expected, err.Error())
+	}
+}
