@@ -5,7 +5,6 @@
 package ini
 
 import (
-	"fmt"
 	"io"
 	"reflect"
 	"strconv"
@@ -53,7 +52,7 @@ func setReflectValue(keyValue *reflect.Value, value string) error {
 	case typeString:
 		keyValue.SetString(value)
 	case typeBool:
-		return setBool(keyValue, value)
+		setBool(keyValue, value)
 	case typeInt, typeInt8, typeInt16, typeInt32, typeInt64:
 		return setInt(keyValue, value)
 	case typeUint, typeUint8, typeUint16, typeUint32, typeUint64:
@@ -116,9 +115,7 @@ func setBools(keyValue *reflect.Value, values []string) error {
 	var bs = make([]bool, len(values))
 	for i, value := range values {
 		bValue := reflect.Indirect(reflect.ValueOf(&bs[i]))
-		if err := setBool(&bValue, value); err != nil {
-			return err
-		}
+		setBool(&bValue, value)
 	}
 	bsValue := reflect.ValueOf(bs)
 	keyValue.Set(bsValue)
@@ -126,14 +123,13 @@ func setBools(keyValue *reflect.Value, values []string) error {
 }
 
 // Returns true on "1" and "true", anything returns false.
-func setBool(keyValue *reflect.Value, value string) error {
+func setBool(keyValue *reflect.Value, value string) {
 	var b bool
 	value = strings.TrimSpace(value)
 	if value == "1" || strings.ToLower(value) == "true" {
 		b = true
 	}
 	keyValue.SetBool(b)
-	return nil
 }
 
 func setInts(keyValue *reflect.Value, values []string) error {
@@ -284,7 +280,6 @@ func setUint64s(keyValue *reflect.Value, values []string) error {
 func setUint(keyValue *reflect.Value, value string) error {
 	n, err := strconv.ParseUint(value, 10, 64)
 	if err != nil {
-		fmt.Println(err.Error())
 		return createConvertError(value, keyValue.Kind().String())
 	}
 	nu64 := uint64(n)
