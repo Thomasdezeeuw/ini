@@ -7,6 +7,7 @@ package ini
 import (
 	"fmt"
 	"math"
+	"io"
 	"reflect"
 	"strconv"
 	"strings"
@@ -31,6 +32,15 @@ var (
 	typeDuration = reflect.TypeOf(time.Nanosecond)
 	typeTime     = reflect.TypeOf(time.Time{})
 )
+
+// Scan scans a configuration into a struct or map, see `Config.Scan`.
+func Scan(r io.Reader, dst interface{}) error {
+	c, err := Parse(r)
+	if err != nil {
+		return err
+	}
+	return c.Scan(dst)
+}
 
 func setReflectValue(keyValue *reflect.Value, value string) error {
 	if keyValue.Kind() == reflect.Slice {

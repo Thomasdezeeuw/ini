@@ -158,15 +158,6 @@ func Load(path string) (Config, error) {
 	return Parse(f)
 }
 
-// Scan scans a configuration into a struct or map, see #Config.Scan.
-func Scan(path string, dst interface{}) error {
-	c, err := Load(path)
-	if err != nil {
-		return err
-	}
-	return c.Scan(dst)
-}
-
 func getMapsKeysAlpha(m map[string]string) []string {
 	keys := make([]string, 0, len(m))
 	for key := range m {
