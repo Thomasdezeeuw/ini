@@ -2,20 +2,19 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/Thomasdezeeuw/ini"
 )
 
-var Production bool
-
 func main() {
-	confFile := "production.ini"
-	if !Production {
-		confFile = "development"
+	f, err := os.Open("config.ini")
+	if err != nil {
+		panic(err)
 	}
 
-	// Load the configuration.
-	c, err = ini.Load(confFile)
+	// Parse the configuration.
+	c, err := ini.Parse(f)
 	if err != nil {
 		panic(err)
 	}
