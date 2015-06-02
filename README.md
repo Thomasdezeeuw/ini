@@ -13,68 +13,10 @@ Run the following line to install.
 $ go get github.com/Thomasdezeeuw/ini
 ```
 
-## Usage
+## Examples
 
-You can load a configuration from a ini formatted file.
-
-```go
-package main
-
-import (
-	"fmt"
-
-	"github.com/Thomasdezeeuw/ini"
-)
-
-var Production bool
-
-func main() {
-	var c ini.Config
-	var err error
-	if Production {
-		c, err = ini.Load("production.ini")
-	} else {
-		c, err = ini.Load("development.ini")
-	}
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	var config struct {
-		Name string
-		HTTP struct {
-			Url  string
-			Port int
-		}
-	}
-
-	c.Scan(&config)
-
-	fmt.Println(config.Name)       // My app
-	fmt.Println(config.HTTP.Url)   // localhost
-	fmt.Println(config.HTTP.Port)  // 8000 (int)
-	fmt.Println(c["HTTP"]["Port"]) // 8000 (string)
-}
-```
-
-```
-; development.ini
-Name = "My app"
-
-[HTTP]
-Url = localhost
-Port = 8000
-```
-
-```
-; production.ini
-Name = "My app"
-
-[HTTP]
-Url = example.com
-Port = 80
-```
+See the `_examples` directory for a complete example. For examples of the
+public API see [Godoc](https://godoc.org/github.com/Thomasdezeeuw/ini).
 
 ## License
 
