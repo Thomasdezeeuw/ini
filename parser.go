@@ -18,10 +18,10 @@ const (
 	seperator    byte = '='
 	sectionStart byte = '['
 	sectionEnd   byte = ']'
-	doubleQuote  byte = '"'
-	singleQuote  byte = '\''
 	escape       byte = '\\'
 	lineEnd      byte = '\n'
+	doubleQuote  byte = '"'
+	singleQuote  byte = '\''
 	nilQuote     byte = 0
 )
 
