@@ -22,11 +22,7 @@ import (
 //
 //	value := config[ini.Global]["key"]
 //	value2, found := config[ini.Global]["key2"]
-const Global = global
-
-// We hide the public Global value in the hope people won't use the string
-// instead of the constant.
-const global = "SUPERGLOBAL"
+const Global = ""
 
 // Name for the global section in errors.
 const globalName = "global"
