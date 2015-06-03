@@ -5,8 +5,7 @@
 package ini
 
 import (
-	"io/ioutil"
-	"os"
+	"bytes"
 	"reflect"
 	"strings"
 	"testing"
@@ -100,29 +99,11 @@ func TestComplete(t *testing.T) {
 		t.Fatalf("Unexpected error opening testdata file: %q", err.Error())
 	}
 
-	f, err := ioutil.TempFile("", "ini")
-	if err != nil {
-		t.Fatalf("Unexpected error opening tempfile: %q", err.Error())
-	}
-	c.WriteTo(f)
-	f.Close()
+	var buf bytes.Buffer
+	c.WriteTo(&buf)
 
-	tmpPath := f.Name()
-	f2, err := os.Open(tmpPath)
-	if err != nil {
-		t.Fatalf("Unexpected error reopening the temp file: %q", err.Error())
-	}
-	c2, err := Parse(f2)
-	if err != nil {
-		t.Fatal(err)
-	}
-	f2.Close()
-
+	c2, err := Parse(&buf)
 	if !reflect.DeepEqual(c, c2) {
 		t.Fatalf("Expected %v, but got %v", c, c2)
-	}
-
-	if err := os.Remove(tmpPath); err != nil {
-		t.Fatalf("Unexpected error removing tempfile: %q", err.Error())
 	}
 }
