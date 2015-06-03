@@ -25,7 +25,7 @@ const (
 	nilQuote     byte = 0
 )
 
-type lineType int
+type lineType uint8
 
 const (
 	commentLine lineType = iota
