@@ -135,6 +135,7 @@ func detectLineType(b byte) lineType {
 }
 
 func parseSection(line []byte) (string, error) {
+	// This should not be possible in regular execution, but just in case.
 	if line[0] != sectionStart {
 		return "", fmt.Errorf("section should start with %q", string(sectionStart))
 	}
@@ -201,7 +202,7 @@ func parseKeyValue(line []byte) (key, value string, err error) {
 				continue
 			} else if b == seperator && valueNumber == 0 && !isQouted {
 				hasSeperator = true
-				i++ // skip the current byte (the separator) in the next loop.
+				i++ // skip the separator in the next loop.
 				break
 			}
 
