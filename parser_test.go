@@ -11,182 +11,130 @@ import (
 	"testing/iotest"
 )
 
-func TestSectionLine(t *testing.T) {
-	t.Parallel()
-	tests := []struct {
-		line    string
-		section string
-	}{
-		{"[section]", "section"},
-		{"[section];comment", "section"},
-		{"[section] ; comment", "section"},
-		{"[sec;tion]", "sec;tion"},
-		{"[ s e c t i o n ]", "s e c t i o n"},
-	}
-
-	for _, test := range tests {
-		section, err := parseSection([]byte(test.line))
-		if err != nil {
-			t.Fatalf("Didn't expect parseSection(%s) to return error: '%s'",
-				test.line, err.Error())
-		}
-
-		if section != test.section {
-			t.Fatalf("Expected parseSection(%s) to return section: %q, but got %q",
-				test.line, test.section, section)
-		}
-	}
-}
-
-func TestKeyValueLine(t *testing.T) {
-	t.Parallel()
-	tests := []struct {
-		line  string
-		key   string
-		value string
-	}{
-		{"key=value", "key", "value"}, // Simple.
-		{"k e y=v a l u e", "k e y", "v a l u e"},
-		{"key = value", "key", "value"},
-		{"key=", "key", ""},
-		{"key=value; comment", "key", "value"}, // Simple with comment.
-		{"key=value ; comment", "key", "value"},
-		{"key = value; comment", "key", "value"},
-		{"key = value ; comment", "key", "value"},
-		{"key=; comment", "key", ""}, // Simple only comment.
-		{"key= ; comment", "key", ""},
-		{"key=;", "key", ""}, // Simple empty comment.
-		{"key= ;", "key", ""},
-		{"key = ;", "key", ""},
-		{"key =  ;", "key", ""},
-
-		{`"key"=value`, "key", "value"}, // Double qoute.
-		{`"key" = value`, "key", "value"},
-		{`key="value"`, "key", "value"},
-		{`key = "value"`, "key", "value"},
-		{`"key"="value"`, "key", "value"},
-		{`"key" = "value"`, "key", "value"},
-		{`"key"=value; comment`, "key", "value"}, // Double qoute with comment.
-		{`"key"=value ; comment`, "key", "value"},
-		{`"key" = value; comment`, "key", "value"},
-		{`"key" = value ; comment`, "key", "value"},
-		{`key="value"; comment`, "key", "value"},
-		{`key="value" ; comment`, "key", "value"},
-		{`key = "value"; comment`, "key", "value"},
-		{`key = "value" ; comment`, "key", "value"},
-		{`"key"="value"; comment`, "key", "value"},
-		{`"key"="value" ; comment`, "key", "value"},
-		{`"key" = "value"; comment`, "key", "value"},
-		{`"key" = "value" ; comment`, "key", "value"},
-		{`"key"=; comment`, "key", ""}, // Double qoute only comment.
-		{`"key"= ; comment`, "key", ""},
-		{`"key" = ; comment`, "key", ""},
-		{`key=""; comment`, "key", ""},
-		{`key="" ; comment`, "key", ""},
-		{`key = ""; comment`, "key", ""},
-		{`key = "" ; comment`, "key", ""},
-		{`"key"=""; comment`, "key", ""},
-		{`"key"="" ; comment`, "key", ""},
-		{`"key" = ""; comment`, "key", ""},
-		{`"key" = "" ; comment`, "key", ""},
-		{`"key"=;`, "key", ""}, // Double quote empty comment.
-		{`"key"= ;`, "key", ""},
-		{`"key" = ;`, "key", ""},
-		{`key="";`, "key", ""},
-		{`key="" ;`, "key", ""},
-		{`key = "";`, "key", ""},
-		{`key = "" ;`, "key", ""},
-		{`"key"="";`, "key", ""},
-		{`"key"="" ;`, "key", ""},
-		{`"key" = "";`, "key", ""},
-		{`"key" = "" ;`, "key", ""},
-
-		{"'key'=value", "key", "value"}, // Single qoute.
-		{"'key' = value", "key", "value"},
-		{"key='value'", "key", "value"},
-		{"key = 'value'", "key", "value"},
-		{"'key'='value'", "key", "value"},
-		{"'key' = 'value'", "key", "value"},
-		{"'key'=value; comment", "key", "value"}, // Single qoute with comment.
-		{"'key'=value ; comment", "key", "value"},
-		{"'key' = value; comment", "key", "value"},
-		{"'key' = value ; comment", "key", "value"},
-		{"key='value'; comment", "key", "value"},
-		{"key='value' ; comment", "key", "value"},
-		{"key = 'value'; comment", "key", "value"},
-		{"key = 'value' ; comment", "key", "value"},
-		{"'key'='value'; comment", "key", "value"},
-		{"'key'='value' ; comment", "key", "value"},
-		{"'key' = 'value'; comment", "key", "value"},
-		{"'key' = 'value' ; comment", "key", "value"},
-		{"'key'=; comment", "key", ""}, // Single qoute only comment.
-		{"'key'= ; comment", "key", ""},
-		{"'key' = ; comment", "key", ""},
-		{"key=''; comment", "key", ""},
-		{"key='' ; comment", "key", ""},
-		{"key = ''; comment", "key", ""},
-		{"key = '' ; comment", "key", ""},
-		{"'key'=''; comment", "key", ""},
-		{"'key'='' ; comment", "key", ""},
-		{"'key' = ''; comment", "key", ""},
-		{"'key' = '' ; comment", "key", ""},
-		{"'key'=;", "key", ""}, // Single quote empty comment.
-		{"'key'= ;", "key", ""},
-		{"'key' = ;", "key", ""},
-		{"key='';", "key", ""},
-		{"key='' ;", "key", ""},
-		{"key = '';", "key", ""},
-		{"key = '' ;", "key", ""},
-		{"'key'='';", "key", ""},
-		{"'key'='' ;", "key", ""},
-		{"'key' = '';", "key", ""},
-		{"'key' = '' ;", "key", ""},
-
-		{`"=key"=value`, "=key", "value"}, // Escaped qoutes.
-		{`"k\"ey"=value`, `k"ey`, "value"},
-		{`key="val\"ue="`, "key", `val"ue=`},
-
-		{"ke;y=value", "ke;y", "value"}, // Misc.
-		{`k\\ey=val\\ue`, `k\ey`, `val\ue`},
-		{`k\"ey=val\"ue`, `k"ey`, `val"ue`},
-		{`key=val\"ue\"`, `key`, `val"ue"`},
-		{`key="val\"ue\""`, `key`, `val"ue"`},
-		{`\\key=value`, `\key`, "value"},
-		{`"ke;y"=value`, "ke;y", "value"},
-		{`key="val;ue"`, "key", "val;ue"},
-		{`"ke;y"="val;ue"`, "ke;y", "val;ue"},
-		{`key==value`, "key", `=value`},
-		{`key=value=`, "key", `value=`},
-	}
-
-	for _, test := range tests {
-		key, value, err := parseKeyValue([]byte(test.line))
-		if err != nil {
-			t.Fatalf("Didn't expect parseKeyValue(%s) to return error: '%s'",
-				test.line, err.Error())
-		}
-
-		if key != test.key {
-			t.Fatalf("Expected parseKeyValue(%s) to return key: %q, but got %q",
-				test.line, test.key, key)
-		}
-
-		if value != test.value {
-			t.Fatalf("Expected parseKeyValue(%s) to return value: %q, but got %q",
-				test.line, test.key, value)
-		}
-	}
-}
-
 func TestParse(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		content string
 		config  Config
 	}{
+		{"key=value", Config{Global: {"key": "value"}}}, // Simple.
+		{"k e y=v a l u e", Config{Global: {"k e y": "v a l u e"}}},
+		{"key = value", Config{Global: {"key": "value"}}},
+		{"key=", Config{Global: {"key": ""}}},
+		{"key=value; comment", Config{Global: {"key": "value"}}}, // Simple with comment.
+		{"key=value ; comment", Config{Global: {"key": "value"}}},
+		{"key = value; comment", Config{Global: {"key": "value"}}},
+		{"key = value ; comment", Config{Global: {"key": "value"}}},
+		{"key=; comment", Config{Global: {"key": ""}}}, // Simple only comment.
+		{"key= ; comment", Config{Global: {"key": ""}}},
+		{"key=;", Config{Global: {"key": ""}}}, // Simple empty comment.
+		{"key= ;", Config{Global: {"key": ""}}},
+		{"key = ;", Config{Global: {"key": ""}}},
+		{"key =  ;", Config{Global: {"key": ""}}},
+		{`"key"=value`, Config{Global: {"key": "value"}}}, // Double qoute.
+		{`"key" = value`, Config{Global: {"key": "value"}}},
+		{`key="value"`, Config{Global: {"key": "value"}}},
+		{`key = "value"`, Config{Global: {"key": "value"}}},
+		{`"key"="value"`, Config{Global: {"key": "value"}}},
+		{`"key" = "value"`, Config{Global: {"key": "value"}}},
+		{`"key"=value; comment`, Config{Global: {"key": "value"}}}, // Double qoute with comment.
+		{`"key"=value ; comment`, Config{Global: {"key": "value"}}},
+		{`"key" = value; comment`, Config{Global: {"key": "value"}}},
+		{`"key" = value ; comment`, Config{Global: {"key": "value"}}},
+		{`key="value"; comment`, Config{Global: {"key": "value"}}},
+		{`key="value" ; comment`, Config{Global: {"key": "value"}}},
+		{`key = "value"; comment`, Config{Global: {"key": "value"}}},
+		{`key = "value" ; comment`, Config{Global: {"key": "value"}}},
+		{`"key"="value"; comment`, Config{Global: {"key": "value"}}},
+		{`"key"="value" ; comment`, Config{Global: {"key": "value"}}},
+		{`"key" = "value"; comment`, Config{Global: {"key": "value"}}},
+		{`"key" = "value" ; comment`, Config{Global: {"key": "value"}}},
+		{`"key"=; comment`, Config{Global: {"key": ""}}}, // Double qoute only comment.
+		{`"key"= ; comment`, Config{Global: {"key": ""}}},
+		{`"key" = ; comment`, Config{Global: {"key": ""}}},
+		{`key=""; comment`, Config{Global: {"key": ""}}},
+		{`key="" ; comment`, Config{Global: {"key": ""}}},
+		{`key = ""; comment`, Config{Global: {"key": ""}}},
+		{`key = "" ; comment`, Config{Global: {"key": ""}}},
+		{`"key"=""; comment`, Config{Global: {"key": ""}}},
+		{`"key"="" ; comment`, Config{Global: {"key": ""}}},
+		{`"key" = ""; comment`, Config{Global: {"key": ""}}},
+		{`"key" = "" ; comment`, Config{Global: {"key": ""}}},
+		{`"key"=;`, Config{Global: {"key": ""}}}, // Double quote empty comment.
+		{`"key"= ;`, Config{Global: {"key": ""}}},
+		{`"key" = ;`, Config{Global: {"key": ""}}},
+		{`key="";`, Config{Global: {"key": ""}}},
+		{`key="" ;`, Config{Global: {"key": ""}}},
+		{`key = "";`, Config{Global: {"key": ""}}},
+		{`key = "" ;`, Config{Global: {"key": ""}}},
+		{`"key"="";`, Config{Global: {"key": ""}}},
+		{`"key"="" ;`, Config{Global: {"key": ""}}},
+		{`"key" = "";`, Config{Global: {"key": ""}}},
+		{`"key" = "" ;`, Config{Global: {"key": ""}}},
+
+		{"'key'=value", Config{Global: {"key": "value"}}}, // Single qoute.
+		{"'key' = value", Config{Global: {"key": "value"}}},
+		{"key='value'", Config{Global: {"key": "value"}}},
+		{"key = 'value'", Config{Global: {"key": "value"}}},
+		{"'key'='value'", Config{Global: {"key": "value"}}},
+		{"'key' = 'value'", Config{Global: {"key": "value"}}},
+		{"'key'=value; comment", Config{Global: {"key": "value"}}}, // Single qoute with comment.
+		{"'key'=value ; comment", Config{Global: {"key": "value"}}},
+		{"'key' = value; comment", Config{Global: {"key": "value"}}},
+		{"'key' = value ; comment", Config{Global: {"key": "value"}}},
+		{"key='value'; comment", Config{Global: {"key": "value"}}},
+		{"key='value' ; comment", Config{Global: {"key": "value"}}},
+		{"key = 'value'; comment", Config{Global: {"key": "value"}}},
+		{"key = 'value' ; comment", Config{Global: {"key": "value"}}},
+		{"'key'='value'; comment", Config{Global: {"key": "value"}}},
+		{"'key'='value' ; comment", Config{Global: {"key": "value"}}},
+		{"'key' = 'value'; comment", Config{Global: {"key": "value"}}},
+		{"'key' = 'value' ; comment", Config{Global: {"key": "value"}}},
+		{"'key'=; comment", Config{Global: {"key": ""}}}, // Single qoute only comment.
+		{"'key'= ; comment", Config{Global: {"key": ""}}},
+		{"'key' = ; comment", Config{Global: {"key": ""}}},
+		{"key=''; comment", Config{Global: {"key": ""}}},
+		{"key='' ; comment", Config{Global: {"key": ""}}},
+		{"key = ''; comment", Config{Global: {"key": ""}}},
+		{"key = '' ; comment", Config{Global: {"key": ""}}},
+		{"'key'=''; comment", Config{Global: {"key": ""}}},
+		{"'key'='' ; comment", Config{Global: {"key": ""}}},
+		{"'key' = ''; comment", Config{Global: {"key": ""}}},
+		{"'key' = '' ; comment", Config{Global: {"key": ""}}},
+		{"'key'=;", Config{Global: {"key": ""}}}, // Single quote empty comment.
+		{"'key'= ;", Config{Global: {"key": ""}}},
+		{"'key' = ;", Config{Global: {"key": ""}}},
+		{"key='';", Config{Global: {"key": ""}}},
+		{"key='' ;", Config{Global: {"key": ""}}},
+		{"key = '';", Config{Global: {"key": ""}}},
+		{"key = '' ;", Config{Global: {"key": ""}}},
+		{"'key'='';", Config{Global: {"key": ""}}},
+		{"'key'='' ;", Config{Global: {"key": ""}}},
+		{"'key' = '';", Config{Global: {"key": ""}}},
+		{"'key' = '' ;", Config{Global: {"key": ""}}},
+
+		{`"=key"=value`, Config{Global: {"=key": "value"}}}, // Escaped qoutes.
+		{`"k\"ey"=value`, Config{Global: {`k"ey`: "value"}}},
+		{`key="val\"ue="`, Config{Global: {"key": `val"ue=`}}},
+
+		{"ke;y=value", Config{Global: {"ke;y": "value"}}}, // Misc.
+		{`k\\ey=val\\ue`, Config{Global: {`k\ey`: `val\ue`}}},
+		{`k\"ey=val\"ue`, Config{Global: {`k"ey`: `val"ue`}}},
+		{`key=val\"ue\"`, Config{Global: {"key": `val"ue"`}}},
+		{`key="val\"ue\""`, Config{Global: {"key": `val"ue"`}}},
+		{`\\key=value`, Config{Global: {`\key`: "value"}}},
+		{`"ke;y"=value`, Config{Global: {"ke;y": "value"}}},
+		{`key="val;ue"`, Config{Global: {"key": "val;ue"}}},
+		{`"ke;y"="val;ue"`, Config{Global: {"ke;y": "val;ue"}}},
+		{`key==value`, Config{Global: {"key": "=value"}}},
+		{`key=value=`, Config{Global: {"key": "value="}}},
+
 		{"[section]", Config{Global: {}, "section": {}}},
-		{"key=value", Config{Global: {"key": "value"}}},
-		{"key=value; comment", Config{Global: {"key": "value"}}},
+		{"[section];comment", Config{Global: {}, "section": {}}},
+		{"[section] ; comment", Config{Global: {}, "section": {}}},
+		{"[sec;tion]", Config{Global: {}, "sec;tion": {}}},
+		{"[ s e c t i o n ]", Config{Global: {}, "s e c t i o n": {}}},
+
 		{"; comment", Config{Global: {}}},
 		{"key=value\n; comment", Config{Global: {"key": "value"}}},
 		{"[section]\n\nkey=value", Config{Global: {}, "section": {"key": "value"}}},
