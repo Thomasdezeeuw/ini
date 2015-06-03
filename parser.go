@@ -37,7 +37,6 @@ type parser struct {
 	Config            Config
 	scanner           *bufio.Scanner
 	currentSection    string
-	currentLine       []byte
 	currentlineNumber int
 }
 
@@ -58,7 +57,6 @@ func (p *parser) parse() error {
 
 func (p *parser) handleLine(line []byte) error {
 	line = bytes.TrimSpace(line)
-	p.currentLine = line
 	p.currentlineNumber++
 
 	if len(line) == 0 {
