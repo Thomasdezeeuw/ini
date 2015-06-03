@@ -28,6 +28,9 @@ const Global = global
 // instead of the constant.
 const global = "SUPERGLOBAL"
 
+// Name for the global section in errors.
+const globalName = "global"
+
 // Config holds all key-value pairs under sections. To retrieve a key-value
 // pair you can use:
 //
@@ -133,7 +136,7 @@ func (c *Config) Scan(dst interface{}) error {
 
 			if err := setReflectValue(&keyValue, value); err != nil {
 				if sectionName == Global {
-					sectionName = "Global"
+					sectionName = globalName
 				}
 				return fmt.Errorf("ini: error scanning %q in section %q: %s",
 					key, sectionName, err.Error())

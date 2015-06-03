@@ -217,7 +217,7 @@ func TestParseError(t *testing.T) {
 		errMsg  string
 	}{
 		{"key=value\nkey=value2", `ini: synthax error on line 2. key=value2: ` +
-			`key "key" already used in section "SUPERGLOBAL"`},
+			`key "key" already used in section "global"`},
 		{"=value", `ini: synthax error on line 1. =value: key can't be empty`},
 		{`"key'=value`, `ini: synthax error on line 1. "key'=value: qoute not closed`},
 		{`"key=value`, `ini: synthax error on line 1. "key=value: qoute not closed`},

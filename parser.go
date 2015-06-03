@@ -96,6 +96,9 @@ func (p *parser) updateSection(sectionName string) {
 func (p *parser) addKeyValue(key, value string) error {
 	sectionName := p.currentSection
 	if _, ok := p.Config[sectionName][key]; ok {
+		if sectionName == Global {
+			sectionName = globalName
+		}
 		return fmt.Errorf("key %q already used in section %q", key, sectionName)
 	}
 
