@@ -38,31 +38,6 @@ func TestSectionLine(t *testing.T) {
 	}
 }
 
-func TestSectionLineError(t *testing.T) {
-	t.Parallel()
-	tests := []struct {
-		line   string
-		errMsg string
-	}{
-		{"section]", "section should start with \"[\""},
-		{"[section] something", "unexpected \"s\" after section closed"},
-		{"[section", "unclosed section"},
-	}
-
-	for _, test := range tests {
-		_, err := parseSection([]byte(test.line))
-		if err == nil {
-			t.Fatalf("Expected parseSection(%s) to return an error, but didn't get one",
-				test.line)
-		}
-
-		if err.Error() != test.errMsg {
-			t.Fatalf("Expected parseSection(%s) to return error: %q, but got %q",
-				test.line, test.errMsg, err.Error())
-		}
-	}
-}
-
 func TestKeyValueLine(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
@@ -203,46 +178,6 @@ func TestKeyValueLine(t *testing.T) {
 	}
 }
 
-func TestKeyValueLineErrors(t *testing.T) {
-	t.Parallel()
-	tests := []struct {
-		line   string
-		errMsg string
-	}{
-		{`"key'=value`, "qoute not closed"},
-		{`"key=value`, "qoute not closed"},
-		{`'key"=value`, "qoute not closed"},
-		{`'key=value`, "qoute not closed"},
-		{`key="value'`, "qoute not closed"},
-		{`key="value`, "qoute not closed"},
-		{`key='value"`, "qoute not closed"},
-		{`key='value`, "qoute not closed"},
-
-		{"key", "no separator found"},
-		{"key value", "no separator found"},
-		{`"key"`, "no separator found"},
-
-		{`"key"value`, `unexpected "v", expected the seperator "="`},
-		{`"key"val=ue`, `unexpected "v", expected the seperator "="`},
-		{`"key" "2" = value`, `unexpected "\"", expected the seperator "="`},
-
-		{"=value", "key can't be empty"},
-	}
-
-	for _, test := range tests {
-		_, _, err := parseKeyValue([]byte(test.line))
-		if err == nil {
-			t.Fatalf("Expected parseKeyValue(%s) to return an error, but didn't get one",
-				test.line)
-		}
-
-		if err.Error() != test.errMsg {
-			t.Fatalf("Expected parseKeyValue(%s) to return error: %q, but got %q",
-				test.line, test.errMsg, err.Error())
-		}
-	}
-}
-
 func TestParse(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
@@ -284,7 +219,24 @@ func TestParseError(t *testing.T) {
 		{"key=value\nkey=value2", `ini: synthax error on line 2. key=value2: ` +
 			`key "key" already used in section "SUPERGLOBAL"`},
 		{"=value", `ini: synthax error on line 1. =value: key can't be empty`},
+		{`"key'=value`, `ini: synthax error on line 1. "key'=value: qoute not closed`},
+		{`"key=value`, `ini: synthax error on line 1. "key=value: qoute not closed`},
+		{`'key"=value`, `ini: synthax error on line 1. 'key"=value: qoute not closed`},
+		{`'key=value`, `ini: synthax error on line 1. 'key=value: qoute not closed`},
+		{`key="value'`, `ini: synthax error on line 1. key="value': qoute not closed`},
+		{`key="value`, `ini: synthax error on line 1. key="value: qoute not closed`},
+		{`key='value"`, `ini: synthax error on line 1. key='value": qoute not closed`},
+		{`key='value`, `ini: synthax error on line 1. key='value: qoute not closed`},
+		{"key", "ini: synthax error on line 1. key: no separator found"},
+		{"key value", "ini: synthax error on line 1. key value: no separator found"},
+		{`"key"`, `ini: synthax error on line 1. "key": no separator found`},
+		{`"key"value`, `ini: synthax error on line 1. "key"value: unexpected "v", expected the seperator "="`},
+		{`"key"val=ue`, `ini: synthax error on line 1. "key"val=ue: unexpected "v", expected the seperator "="`},
+		{`"key" "value"`, `ini: synthax error on line 1. "key" "value": unexpected "\"", expected the seperator "="`},
+		{`"key" "2" = value`, `ini: synthax error on line 1. "key" "2" = value: unexpected "\"", expected the seperator "="`},
+		{"=value", "ini: synthax error on line 1. =value: key can't be empty"},
 		{"[section", `ini: synthax error on line 1. [section: unclosed section`},
+		{"[section] something", "ini: synthax error on line 1. [section] something: unexpected \"s\" after section closed"},
 	}
 
 	for _, test := range tests {
@@ -297,6 +249,9 @@ func TestParseError(t *testing.T) {
 		if err.Error() != test.errMsg {
 			t.Fatalf("Expected Parse(%s) to return error: %q, but got %q",
 				test.content, test.errMsg, err.Error())
+		} else if !IsSynthaxError(err) {
+			t.Fatalf("Expected parseSection(%s) to return an synthax error, but it isn't",
+				test.content)
 		}
 	}
 }
