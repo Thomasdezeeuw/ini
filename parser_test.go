@@ -216,27 +216,27 @@ func TestParseError(t *testing.T) {
 		content string
 		errMsg  string
 	}{
-		{"key=value\nkey=value2", `ini: synthax error on line 2. key=value2: ` +
+		{"key=value\nkey=value2", `ini: synthax error on line 2: ` +
 			`key "key" already used in section "global"`},
-		{"=value", `ini: synthax error on line 1. =value: key can't be empty`},
-		{`"key'=value`, `ini: synthax error on line 1. "key'=value: qoute not closed`},
-		{`"key=value`, `ini: synthax error on line 1. "key=value: qoute not closed`},
-		{`'key"=value`, `ini: synthax error on line 1. 'key"=value: qoute not closed`},
-		{`'key=value`, `ini: synthax error on line 1. 'key=value: qoute not closed`},
-		{`key="value'`, `ini: synthax error on line 1. key="value': qoute not closed`},
-		{`key="value`, `ini: synthax error on line 1. key="value: qoute not closed`},
-		{`key='value"`, `ini: synthax error on line 1. key='value": qoute not closed`},
-		{`key='value`, `ini: synthax error on line 1. key='value: qoute not closed`},
-		{"key", "ini: synthax error on line 1. key: no separator found"},
-		{"key value", "ini: synthax error on line 1. key value: no separator found"},
-		{`"key"`, `ini: synthax error on line 1. "key": no separator found`},
-		{`"key"value`, `ini: synthax error on line 1. "key"value: unexpected "v", expected the seperator "="`},
-		{`"key"val=ue`, `ini: synthax error on line 1. "key"val=ue: unexpected "v", expected the seperator "="`},
-		{`"key" "value"`, `ini: synthax error on line 1. "key" "value": unexpected "\"", expected the seperator "="`},
-		{`"key" "2" = value`, `ini: synthax error on line 1. "key" "2" = value: unexpected "\"", expected the seperator "="`},
-		{"=value", "ini: synthax error on line 1. =value: key can't be empty"},
-		{"[section", `ini: synthax error on line 1. [section: unclosed section`},
-		{"[section] something", "ini: synthax error on line 1. [section] something: unexpected \"s\" after section closed"},
+		{"=value", `ini: synthax error on line 1: key can't be empty`},
+		{`"key'=value`, `ini: synthax error on line 1: qoute not closed`},
+		{`"key=value`, `ini: synthax error on line 1: qoute not closed`},
+		{`'key"=value`, `ini: synthax error on line 1: qoute not closed`},
+		{`'key=value`, `ini: synthax error on line 1: qoute not closed`},
+		{`key="value'`, `ini: synthax error on line 1: qoute not closed`},
+		{`key="value`, `ini: synthax error on line 1: qoute not closed`},
+		{`key='value"`, `ini: synthax error on line 1: qoute not closed`},
+		{`key='value`, `ini: synthax error on line 1: qoute not closed`},
+		{"key", "ini: synthax error on line 1: no separator found"},
+		{"key value", "ini: synthax error on line 1: no separator found"},
+		{`"key"`, `ini: synthax error on line 1: no separator found`},
+		{`"key"value`, `ini: synthax error on line 1: unexpected "v", expected the seperator "="`},
+		{`"key"val=ue`, `ini: synthax error on line 1: unexpected "v", expected the seperator "="`},
+		{`"key" "value"`, `ini: synthax error on line 1: unexpected "\"", expected the seperator "="`},
+		{`"key" "2" = value`, `ini: synthax error on line 1: unexpected "\"", expected the seperator "="`},
+		{"=value", "ini: synthax error on line 1: key can't be empty"},
+		{"[section", `ini: synthax error on line 1: unclosed section`},
+		{"[section] something", "ini: synthax error on line 1: unexpected \"s\" after section closed"},
 	}
 
 	for _, test := range tests {

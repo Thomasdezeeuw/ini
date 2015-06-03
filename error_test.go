@@ -7,9 +7,9 @@ import (
 
 func TestNewSynthaxError(t *testing.T) {
 	t.Parallel()
-	err := newSynthaxError(1, "the line", "error message")
+	err := newSynthaxError(1, "error message")
 
-	expected := "ini: synthax error on line 1. the line: error message"
+	expected := "ini: synthax error on line 1: error message"
 	if err.Error() != expected {
 		t.Fatalf("Expected the synthax error to be %q, but got %q",
 			expected, err.Error())
@@ -26,7 +26,7 @@ func TestIsSynthaxError(t *testing.T) {
 		t.Fatalf("Expected synthax error to return false on regular errors")
 	}
 
-	got := IsSynthaxError(newSynthaxError(1, "the line", "error message"))
+	got := IsSynthaxError(newSynthaxError(1, "error message"))
 	if got != true {
 		t.Fatalf("Expected synthax error to return true on synthax errors")
 	}
