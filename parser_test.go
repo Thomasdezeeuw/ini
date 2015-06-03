@@ -12,6 +12,7 @@ import (
 )
 
 func TestSectionLine(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		line    string
 		section string
@@ -38,6 +39,7 @@ func TestSectionLine(t *testing.T) {
 }
 
 func TestSectionLineError(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		line   string
 		errMsg string
@@ -62,6 +64,7 @@ func TestSectionLineError(t *testing.T) {
 }
 
 func TestKeyValueLine(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		line  string
 		key   string
@@ -201,6 +204,7 @@ func TestKeyValueLine(t *testing.T) {
 }
 
 func TestKeyValueLineErrors(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		line   string
 		errMsg string
@@ -240,6 +244,7 @@ func TestKeyValueLineErrors(t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		content string
 		config  Config
@@ -271,6 +276,7 @@ func TestParse(t *testing.T) {
 }
 
 func TestParseError(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		content string
 		errMsg  string
@@ -296,6 +302,7 @@ func TestParseError(t *testing.T) {
 }
 
 func TestParseIOError(t *testing.T) {
+	t.Parallel()
 	r := iotest.TimeoutReader(strings.NewReader("key=value\nkey2=value2"))
 
 	_, err := Parse(r)

@@ -13,6 +13,7 @@ import (
 )
 
 func TestPossibleQoute(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		input    string
 		expected string
@@ -31,6 +32,7 @@ func TestPossibleQoute(t *testing.T) {
 }
 
 func TestGetKeysAlpha(t *testing.T) {
+	t.Parallel()
 	input := map[string]string{
 		"a": "a",
 		"b": "b",
@@ -57,6 +59,7 @@ func TestGetKeysAlpha(t *testing.T) {
 }
 
 func TestGetConfigSectionsAlpha(t *testing.T) {
+	t.Parallel()
 	c := Config{Global: {}, "section1": {}, "section2": {}}
 
 	got := getConfigSectionsAlpha(c)
@@ -76,6 +79,7 @@ func TestGetConfigSectionsAlpha(t *testing.T) {
 }
 
 func TestComplete(t *testing.T) {
+	t.Parallel()
 	const content = `; Configuration.
 	msg="Welcome \"Bob\"" ; A welcome message
 	name='http server' ;)

@@ -6,6 +6,7 @@ import (
 )
 
 func TestNewSynthaxError(t *testing.T) {
+	t.Parallel()
 	err := newSynthaxError(1, "the line", "error message")
 
 	expected := "ini: synthax error on line 1. the line: error message"
@@ -20,6 +21,7 @@ func TestNewSynthaxError(t *testing.T) {
 }
 
 func TestIsSynthaxError(t *testing.T) {
+	t.Parallel()
 	if got := IsSynthaxError(errors.New("some error")); got != false {
 		t.Fatalf("Expected synthax error to return false on regular errors")
 	}
@@ -31,6 +33,7 @@ func TestIsSynthaxError(t *testing.T) {
 }
 
 func TestCreateOverflowError(t *testing.T) {
+	t.Parallel()
 	err := createOverflowError("5000", "int8")
 	expected := `can't convert "5000" to type int8, it overflows type int8`
 	if err.Error() != expected {
@@ -40,6 +43,7 @@ func TestCreateOverflowError(t *testing.T) {
 }
 
 func TestCreateConvertError(t *testing.T) {
+	t.Parallel()
 	err := createConvertError("string", "int8")
 	expected := `can't convert "string" to type int8`
 	if err.Error() != expected {

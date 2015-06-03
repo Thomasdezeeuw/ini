@@ -76,6 +76,7 @@ type Slices struct {
 }
 
 func TestConfigScan(t *testing.T) {
+	t.Parallel()
 	c := Config{
 		Global: {
 			"str":      "string",
@@ -213,6 +214,7 @@ type smallSection struct {
 }
 
 func TestScan(t *testing.T) {
+	t.Parallel()
 	content := "key = value\n[section]\nkey2=value2"
 
 	var got smallTestData
