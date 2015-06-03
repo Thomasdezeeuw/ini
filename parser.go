@@ -164,6 +164,10 @@ func parseSection(line []byte) (string, error) {
 	}
 
 	section := string(bytes.TrimSpace(sectionName))
+	if len(section) == 0 {
+		return "", errors.New("section can't be empty")
+	}
+
 	return section, nil
 }
 

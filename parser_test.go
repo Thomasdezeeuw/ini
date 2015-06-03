@@ -237,6 +237,8 @@ func TestParseError(t *testing.T) {
 		{"=value", "ini: synthax error on line 1: key can't be empty"},
 		{"[section", `ini: synthax error on line 1: unclosed section`},
 		{"[section] something", "ini: synthax error on line 1: unexpected \"s\" after section closed"},
+		{"[]", "ini: synthax error on line 1: section can't be empty"},
+		{"[ ]", "ini: synthax error on line 1: section can't be empty"},
 	}
 
 	for _, test := range tests {
