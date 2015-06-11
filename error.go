@@ -30,8 +30,8 @@ func IsSynthaxError(err error) bool {
 }
 
 func createOverflowError(value, t string) error {
-	return fmt.Errorf("ini: can't convert %q to type %s, it overflows type %s",
-		value, t, t)
+	return fmt.Errorf("ini: can't convert %q to type %s, it overflows the type",
+		value, t)
 }
 
 func createConvertError(value, t string) error {
