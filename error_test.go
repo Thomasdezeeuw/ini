@@ -39,7 +39,7 @@ func TestIsSynthaxError(t *testing.T) {
 func TestCreateOverflowError(t *testing.T) {
 	t.Parallel()
 	err := createOverflowError("5000", "int8")
-	expected := `can't convert "5000" to type int8, it overflows type int8`
+	expected := `ini: can't convert "5000" to type int8, it overflows type int8`
 	if err.Error() != expected {
 		t.Fatalf("Expected the error message error to be %q, but got %q",
 			expected, err.Error())
@@ -49,7 +49,7 @@ func TestCreateOverflowError(t *testing.T) {
 func TestCreateConvertError(t *testing.T) {
 	t.Parallel()
 	err := createConvertError("string", "int8")
-	expected := `can't convert "string" to type int8`
+	expected := `ini: can't convert "string" to type int8`
 	if err.Error() != expected {
 		t.Fatalf("Expected the error message error to be %q, but got %q",
 			expected, err.Error())
