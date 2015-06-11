@@ -61,3 +61,15 @@ func IsSynthaxError(err error) bool {
 	_, ok := err.(synthaxError)
 	return ok
 }
+
+// IsOverflowError checks if an error is an overflow error.
+func IsOverflowError(err error) bool {
+	_, ok := err.(overflowError)
+	return ok
+}
+
+// IsCovertionError checks if an error is a covertion error.
+func IsCovertionError(err error) bool {
+	_, ok := err.(covertionError)
+	return ok
+}
