@@ -11,7 +11,7 @@ import (
 
 func TestNewSynthaxError(t *testing.T) {
 	t.Parallel()
-	err := newSynthaxError(1, "error message")
+	err := createSynthaxError(1, "error message")
 
 	expected := "ini: synthax error on line 1: error message"
 	if err.Error() != expected {
@@ -31,7 +31,7 @@ func TestIsSynthaxError(t *testing.T) {
 		t.Fatalf("Expected IsSynthaxError(%v) to return false", regularError)
 	}
 
-	synthaxError := newSynthaxError(1, "error message")
+	synthaxError := createSynthaxError(1, "error message")
 	if got := IsSynthaxError(synthaxError); got != true {
 		t.Fatalf("Expected IsSynthaxError(%v) to return true", synthaxError)
 	}
@@ -49,7 +49,7 @@ func TestCreateOverflowError(t *testing.T) {
 
 func TestCreateConvertError(t *testing.T) {
 	t.Parallel()
-	err := createConvertError("string", "int8")
+	err := createCovertionError("string", "int8")
 	expected := `ini: can't convert "string" to type int8`
 	if err.Error() != expected {
 		t.Fatalf("Expected the error message error to be %q, but got %q",

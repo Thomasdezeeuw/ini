@@ -45,7 +45,7 @@ func (p *parser) parse() error {
 		line := p.scanner.Bytes()
 
 		if err := p.handleLine(line); err != nil {
-			return newSynthaxError(p.currentlineNumber, err.Error())
+			return createSynthaxError(p.currentlineNumber, err.Error())
 		}
 	}
 

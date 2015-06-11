@@ -200,7 +200,7 @@ func setInt64s(keyValue *reflect.Value, values []string) error {
 func setInt(keyValue *reflect.Value, value string) error {
 	n, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
-		return createConvertError(value, keyValue.Kind().String())
+		return createCovertionError(value, keyValue.Kind().String())
 	}
 	n64 := int64(n)
 
@@ -280,7 +280,7 @@ func setUint64s(keyValue *reflect.Value, values []string) error {
 func setUint(keyValue *reflect.Value, value string) error {
 	n, err := strconv.ParseUint(value, 10, 64)
 	if err != nil {
-		return createConvertError(value, keyValue.Kind().String())
+		return createCovertionError(value, keyValue.Kind().String())
 	}
 	nu64 := uint64(n)
 
@@ -321,7 +321,7 @@ func setFloat64s(keyValue *reflect.Value, values []string) error {
 func setFloat(keyValue *reflect.Value, value string) error {
 	f, err := strconv.ParseFloat(value, 64)
 	if err != nil {
-		return createConvertError(value, keyValue.Kind().String())
+		return createCovertionError(value, keyValue.Kind().String())
 	}
 
 	if keyValue.OverflowFloat(f) {
@@ -348,7 +348,7 @@ func setDurations(keyValue *reflect.Value, values []string) error {
 func setDuration(keyValue *reflect.Value, value string) error {
 	duration, err := time.ParseDuration(value)
 	if err != nil {
-		return createConvertError(value, "time.Duration")
+		return createCovertionError(value, "time.Duration")
 	}
 
 	durationValue := reflect.ValueOf(duration)
@@ -379,7 +379,7 @@ func setTime(keyValue *reflect.Value, value string) error {
 		}
 	}
 
-	return createConvertError(value, "time.Time")
+	return createCovertionError(value, "time.Time")
 }
 
 func getSectionValue(keyValue reflect.Value, sectionName string) reflect.Value {
