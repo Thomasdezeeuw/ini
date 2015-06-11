@@ -205,7 +205,7 @@ func setInt(keyValue *reflect.Value, value string) error {
 	n64 := int64(n)
 
 	if keyValue.OverflowInt(n64) {
-		createOverflowError(value, keyValue.Kind().String())
+		return createOverflowError(value, keyValue.Kind().String())
 	}
 
 	keyValue.SetInt(n64)
@@ -285,7 +285,7 @@ func setUint(keyValue *reflect.Value, value string) error {
 	nu64 := uint64(n)
 
 	if keyValue.OverflowUint(nu64) {
-		createOverflowError(value, keyValue.Kind().String())
+		return createOverflowError(value, keyValue.Kind().String())
 	}
 
 	keyValue.SetUint(nu64)
@@ -325,7 +325,7 @@ func setFloat(keyValue *reflect.Value, value string) error {
 	}
 
 	if keyValue.OverflowFloat(f) {
-		createOverflowError(value, keyValue.Kind().String())
+		return createOverflowError(value, keyValue.Kind().String())
 	}
 
 	keyValue.SetFloat(f)
