@@ -26,13 +26,14 @@ func TestNewSynthaxError(t *testing.T) {
 
 func TestIsSynthaxError(t *testing.T) {
 	t.Parallel()
-	if got := IsSynthaxError(errors.New("some error")); got != false {
-		t.Fatalf("Expected synthax error to return false on regular errors")
+	regularError := errors.New("some error")
+	if got := IsSynthaxError(regularError); got != false {
+		t.Fatalf("Expected IsSynthaxError(%v) to return false", regularError)
 	}
 
-	got := IsSynthaxError(newSynthaxError(1, "error message"))
-	if got != true {
-		t.Fatalf("Expected synthax error to return true on synthax errors")
+	synthaxError := newSynthaxError(1, "error message")
+	if got := IsSynthaxError(synthaxError); got != true {
+		t.Fatalf("Expected IsSynthaxError(%v) to return true", synthaxError)
 	}
 }
 
