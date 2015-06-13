@@ -6,14 +6,14 @@ package ini
 
 import "fmt"
 
-type synthaxError struct {
-	lineNumber int
-	msg        string
+type SynthaxError struct {
+	LineNumber int
+	Message    string
 }
 
-func (err synthaxError) Error() string {
+func (err SynthaxError) Error() string {
 	return fmt.Sprintf("ini: synthax error on line %d: %s",
-		err.lineNumber, err.msg)
+		err.LineNumber, err.Message)
 }
 
 type overflowError struct {
@@ -36,9 +36,9 @@ func (err covertionError) Error() string {
 }
 
 func createSynthaxError(lineNumber int, msg string) error {
-	return synthaxError{
-		lineNumber: lineNumber,
-		msg:        msg,
+	return SynthaxError{
+		LineNumber: lineNumber,
+		Message:    msg,
 	}
 }
 
@@ -58,7 +58,7 @@ func createCovertionError(value, t string) error {
 
 // IsSynthaxError checks if an error is a synthax error.
 func IsSynthaxError(err error) bool {
-	_, ok := err.(synthaxError)
+	_, ok := err.(SynthaxError)
 	return ok
 }
 
