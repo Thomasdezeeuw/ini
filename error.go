@@ -26,13 +26,13 @@ func (err OverflowError) Error() string {
 		err.Value, err.Type)
 }
 
-type covertionError struct {
-	value string
-	t     string
+type CovertionError struct {
+	Value string
+	Type  string
 }
 
-func (err covertionError) Error() string {
-	return fmt.Sprintf("ini: can't convert %q to type %s", err.value, err.t)
+func (err CovertionError) Error() string {
+	return fmt.Sprintf("ini: can't convert %q to type %s", err.Value, err.Type)
 }
 
 func createSynthaxError(lineNumber int, msg string) error {
@@ -50,9 +50,9 @@ func createOverflowError(value, t string) error {
 }
 
 func createCovertionError(value, t string) error {
-	return covertionError{
-		value: value,
-		t:     t,
+	return CovertionError{
+		Value: value,
+		Type:  t,
 	}
 }
 
@@ -70,6 +70,6 @@ func IsOverflowError(err error) bool {
 
 // IsCovertionError checks if an error is a covertion error.
 func IsCovertionError(err error) bool {
-	_, ok := err.(covertionError)
+	_, ok := err.(CovertionError)
 	return ok
 }
