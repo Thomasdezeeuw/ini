@@ -16,14 +16,14 @@ func (err SynthaxError) Error() string {
 		err.LineNumber, err.Message)
 }
 
-type overflowError struct {
-	value string
-	t     string
+type OverflowError struct {
+	Value string
+	Type  string
 }
 
-func (err overflowError) Error() string {
+func (err OverflowError) Error() string {
 	return fmt.Sprintf("ini: can't convert %q to type %s, it overflows the type",
-		err.value, err.t)
+		err.Value, err.Type)
 }
 
 type covertionError struct {
@@ -43,9 +43,9 @@ func createSynthaxError(lineNumber int, msg string) error {
 }
 
 func createOverflowError(value, t string) error {
-	return overflowError{
-		value: value,
-		t:     t,
+	return OverflowError{
+		Value: value,
+		Type:  t,
 	}
 }
 
@@ -64,7 +64,7 @@ func IsSynthaxError(err error) bool {
 
 // IsOverflowError checks if an error is an overflow error.
 func IsOverflowError(err error) bool {
-	_, ok := err.(overflowError)
+	_, ok := err.(OverflowError)
 	return ok
 }
 
