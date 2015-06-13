@@ -9,22 +9,7 @@ import (
 	"testing"
 )
 
-func TestNewSynthaxError(t *testing.T) {
-	t.Parallel()
-	err := createSynthaxError(1, "error message")
-
-	expected := "ini: synthax error on line 1: error message"
-	if err.Error() != expected {
-		t.Fatalf("Expected the synthax error to be %q, but got %q",
-			expected, err.Error())
-	}
-
-	if !IsSynthaxError(err) {
-		t.Fatal("Expected the synthax error to be a synthax error, but it isn't")
-	}
-}
-
-func TestIsSynthaxError(t *testing.T) {
+func TestSynthaxError(t *testing.T) {
 	t.Parallel()
 	regularError := errors.New("some error")
 	if got := IsSynthaxError(regularError); got != false {
@@ -35,24 +20,48 @@ func TestIsSynthaxError(t *testing.T) {
 	if got := IsSynthaxError(synthaxError); got != true {
 		t.Fatalf("Expected IsSynthaxError(%v) to return true", synthaxError)
 	}
-}
 
-func TestCreateOverflowError(t *testing.T) {
-	t.Parallel()
-	err := createOverflowError("5000", "int8")
-	expected := `ini: can't convert "5000" to type int8, it overflows the type`
-	if err.Error() != expected {
-		t.Fatalf("Expected the error message error to be %q, but got %q",
-			expected, err.Error())
+	expected := "ini: synthax error on line 1: error message"
+	if synthaxError.Error() != expected {
+		t.Fatalf("Expected the synthax error to be %q, but got %q",
+			expected, synthaxError.Error())
 	}
 }
 
-func TestCreateConvertError(t *testing.T) {
+func TestOverflowError(t *testing.T) {
 	t.Parallel()
-	err := createCovertionError("string", "int8")
-	expected := `ini: can't convert "string" to type int8`
-	if err.Error() != expected {
+	regularError := errors.New("some error")
+	if got := IsOverflowError(regularError); got != false {
+		t.Fatalf("Expected IsOverflowError(%v) to return false", regularError)
+	}
+
+	overflowError := createOverflowError("5000", "int8")
+	if got := IsOverflowError(overflowError); got != true {
+		t.Fatalf("Expected IsOverflowError(%v) to return true", overflowError)
+	}
+
+	expected := `ini: can't convert "5000" to type int8, it overflows the type`
+	if overflowError.Error() != expected {
 		t.Fatalf("Expected the error message error to be %q, but got %q",
-			expected, err.Error())
+			expected, overflowError.Error())
+	}
+}
+
+func TestCovertionError(t *testing.T) {
+	t.Parallel()
+	regularError := errors.New("some error")
+	if got := IsCovertionError(regularError); got != false {
+		t.Fatalf("Expected IsCovertionError(%v) to return false", regularError)
+	}
+
+	covertionError := createCovertionError("string", "int8")
+	if got := IsCovertionError(covertionError); got != true {
+		t.Fatalf("Expected IsCovertionError(%v) to return true", covertionError)
+	}
+
+	expected := `ini: can't convert "string" to type int8`
+	if covertionError.Error() != expected {
+		t.Fatalf("Expected the error message error to be %q, but got %q",
+			expected, covertionError.Error())
 	}
 }
