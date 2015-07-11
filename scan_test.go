@@ -234,3 +234,69 @@ func TestScan(t *testing.T) {
 		t.Fatalf("Expected %v, but got %v", got, expected)
 	}
 }
+
+func TestScanInto(t *testing.T) {
+	t.Parallel()
+
+	var host string
+	var port int
+	conf := Config{
+		Global: {
+			"host": "localhost",
+			"port": "8080",
+		},
+	}
+
+	if err := ScanInto(conf[Global]["host"], &host); err != nil {
+		t.Fatal("Unexpected error scanning variable: %s", err.Error())
+	} else if err := ScanInto(conf[Global]["port"], &port); err != nil {
+		t.Fatal("Unexpected error scanning variable: %s", err.Error())
+	}
+
+	if expected := "localhost"; host != expected {
+		t.Fatalf("Expected host to be %q, but got %q", expected, host)
+	}
+	if expected := 8080; port != expected {
+		t.Fatalf("Expected port to be %d, but got %d", expected, port)
+	}
+}
+
+func TestScanIntoNotPointerError(t *testing.T) {
+	t.Parallel()
+
+	var ui8 uint8
+	conf := Config{
+		Global: {
+			"ui8": "500",
+		},
+	}
+
+	err := ScanInto(conf[Global]["ui8"], ui8)
+	expected := "ini: ScanInto requires a pointer to a destination value"
+	if err == nil {
+		t.Fatal("Expected an error, but didn't get one")
+	} else if err.Error() != expected {
+		t.Fatalf("Expected error message to be %q, but got %q",
+			expected, err.Error())
+	}
+}
+
+func TestScanIntoOverflowError(t *testing.T) {
+	t.Parallel()
+
+	var ui8 uint8
+	conf := Config{
+		Global: {
+			"ui8": "500",
+		},
+	}
+
+	err := ScanInto(conf[Global]["ui8"], &ui8)
+	expected := "ini: can't convert '500' to type uint8, it overflows the type"
+	if err == nil {
+		t.Fatal("Expected an error, but didn't get one")
+	} else if err.Error() != expected {
+		t.Fatalf("Expected error message to be %q, but got %q",
+			expected, err.Error())
+	}
+}
