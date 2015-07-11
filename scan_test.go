@@ -248,9 +248,9 @@ func TestScanInto(t *testing.T) {
 	}
 
 	if err := ScanInto(conf[Global]["host"], &host); err != nil {
-		t.Fatal("Unexpected error scanning variable: %s", err.Error())
+		t.Fatalf("Unexpected error scanning variable: %s", err.Error())
 	} else if err := ScanInto(conf[Global]["port"], &port); err != nil {
-		t.Fatal("Unexpected error scanning variable: %s", err.Error())
+		t.Fatalf("Unexpected error scanning variable: %s", err.Error())
 	}
 
 	if expected := "localhost"; host != expected {

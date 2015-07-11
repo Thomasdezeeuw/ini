@@ -20,14 +20,14 @@ func main() {
 	}
 
 	// We can now access it like so:
-	fmt.Println(c["HTTP"]["Url"])  // localhost (string)
+	fmt.Println(c["HTTP"]["Host"]) // localhost (string)
 	fmt.Println(c["HTTP"]["Port"]) // 8000 (string)
 
 	// Bud usually we want to use our own custom configuration, like so:
 	var config struct {
 		Name string
 		HTTP struct {
-			Url  string
+			Host string
 			Port int
 		}
 	}
@@ -36,6 +36,6 @@ func main() {
 	c.Scan(&config)
 
 	// And access its values like so:
-	fmt.Println(config.HTTP.Url)  // localhost (string)
+	fmt.Println(config.HTTP.Host) // localhost (string)
 	fmt.Println(config.HTTP.Port) // 8000 (int)
 }
