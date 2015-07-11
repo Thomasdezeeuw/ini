@@ -40,7 +40,7 @@ func TestOverflowError(t *testing.T) {
 		t.Fatalf("Expected IsOverflowError(%v) to return true", overflowError)
 	}
 
-	expected := `ini: can't convert "5000" to type int8, it overflows the type`
+	expected := "ini: can't convert '5000' to type int8, it overflows the type"
 	if overflowError.Error() != expected {
 		t.Fatalf("Expected the error message error to be %q, but got %q",
 			expected, overflowError.Error())
@@ -59,7 +59,7 @@ func TestCovertionError(t *testing.T) {
 		t.Fatalf("Expected IsCovertionError(%v) to return true", covertionError)
 	}
 
-	expected := `ini: can't convert "string" to type int8`
+	expected := "ini: can't convert 'string' to type int8"
 	if covertionError.Error() != expected {
 		t.Fatalf("Expected the error message error to be %q, but got %q",
 			expected, covertionError.Error())

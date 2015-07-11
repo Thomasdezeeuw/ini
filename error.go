@@ -22,7 +22,7 @@ type OverflowError struct {
 }
 
 func (err OverflowError) Error() string {
-	return fmt.Sprintf("ini: can't convert %q to type %s, it overflows the type",
+	return fmt.Sprintf("ini: can't convert '%s' to type %s, it overflows the type",
 		err.Value, err.Type)
 }
 
@@ -32,7 +32,7 @@ type CovertionError struct {
 }
 
 func (err CovertionError) Error() string {
-	return fmt.Sprintf("ini: can't convert %q to type %s", err.Value, err.Type)
+	return fmt.Sprintf("ini: can't convert '%s' to type %s", err.Value, err.Type)
 }
 
 func createSynthaxError(lineNumber int, msg string) error {
