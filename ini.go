@@ -113,7 +113,7 @@ func (c *Config) Scan(dst interface{}) error {
 	// struct we can't set/change any keys on it, in either case we can't do
 	// anything with the value.
 	if valuePtr.Kind() != reflect.Ptr || value.Kind() != reflect.Struct {
-		return errors.New("ini: Config.Scan requires a pointer to struct")
+		return errors.New("ini: Config.Scan requires a pointer to a struct")
 	}
 
 	for sectionName, section := range *c {

@@ -122,7 +122,7 @@ func setBools(keyValue *reflect.Value, values []string) error {
 	return nil
 }
 
-// Returns true on "1" and "true", anything returns false.
+// Returns true on "1" and "true" (case insensitive), anything returns false.
 func setBool(keyValue *reflect.Value, value string) {
 	var b bool
 	value = strings.TrimSpace(value)
