@@ -183,6 +183,7 @@ func TestParseError(t *testing.T) {
 		{`"key" "value"`, `ini: synthax error on line 1: unexpected "\"", expected the seperator "="`},
 		{`"key" "2" = value`, `ini: synthax error on line 1: unexpected "\"", expected the seperator "="`},
 		{"=value", "ini: synthax error on line 1: key can't be empty"},
+		{"[", "ini: synthax error on line 1: unclosed section"},
 		{"[section", `ini: synthax error on line 1: unclosed section`},
 		{"[section] something", "ini: synthax error on line 1: unexpected \"s\" after section closed"},
 		{"[]", "ini: synthax error on line 1: section can't be empty"},
