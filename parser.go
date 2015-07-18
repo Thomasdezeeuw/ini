@@ -140,7 +140,11 @@ func parseSection(line []byte) (string, error) {
 		return "", fmt.Errorf("section should start with %q", string(sectionStart))
 	}
 
-	var sectionName = make([]byte, 0, len(line)-2)
+	l := len(line)
+	if l > 2 {
+		l -= 2
+	}
+	var sectionName = make([]byte, 0, l)
 	var sectionEnded bool
 
 	// Skipping the opening bracket.
