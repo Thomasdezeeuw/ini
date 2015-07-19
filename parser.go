@@ -25,14 +25,6 @@ const (
 	nilQuote     byte = 0
 )
 
-type lineType uint8
-
-const (
-	commentLine lineType = iota
-	sectionLine
-	keyValuePairLine
-)
-
 type parser struct {
 	Config            Config
 	scanner           *bufio.Scanner
@@ -63,15 +55,16 @@ func (p *parser) handleLine(line []byte) error {
 		return nil
 	}
 
-	switch detectLineType(line[0]) {
-	case sectionLine:
+	switch line[0] {
+	case commentStart:
+	case sectionStart:
 		sectionName, err := parseSection(line)
 		if err != nil {
 			return err
 		}
 
 		p.updateSection(sectionName)
-	case keyValuePairLine:
+	default:
 		key, value, err := parseKeyValue(line)
 		if err != nil {
 			return err
@@ -122,16 +115,6 @@ func newParser(r io.Reader) *parser {
 		currentSection: Global,
 		scanner:        bufio.NewScanner(r),
 	}
-}
-
-func detectLineType(b byte) lineType {
-	if b == commentStart {
-		return commentLine
-	} else if b == sectionStart {
-		return sectionLine
-	}
-
-	return keyValuePairLine
 }
 
 func parseSection(line []byte) (string, error) {
