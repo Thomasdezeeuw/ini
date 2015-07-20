@@ -4,7 +4,7 @@
 [![Build Status](https://travis-ci.org/Thomasdezeeuw/ini.png?branch=master)](https://travis-ci.org/Thomasdezeeuw/ini)
 
 Ini is a [Go](https://golang.org/) package for for parsing ini (or cfg) files.
-See [Godoc](https://godoc.org/github.com/Thomasdezeeuw/ini) for the APi.
+See [Godoc](https://godoc.org/github.com/Thomasdezeeuw/ini) for the API.
 
 ## Installation
 
