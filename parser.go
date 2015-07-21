@@ -63,7 +63,9 @@ func (p *parser) handleLine(line []byte) error {
 			return err
 		}
 
-		p.updateSection(sectionName)
+		if err := p.updateSection(sectionName); err != nil {
+			return err
+		}
 	default:
 		key, value, err := parseKeyValue(line)
 		if err != nil {
@@ -78,9 +80,13 @@ func (p *parser) handleLine(line []byte) error {
 	return nil
 }
 
-func (p *parser) updateSection(sectionName string) {
+func (p *parser) updateSection(sectionName string) error {
+	if _, ok := p.Config[sectionName]; ok {
+		return fmt.Errorf("section %q already exists", sectionName)
+	}
 	p.currentSection = sectionName
 	p.Config[sectionName] = map[string]string{}
+	return nil
 }
 
 func (p *parser) addKeyValue(key, value string) error {

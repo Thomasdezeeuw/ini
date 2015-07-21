@@ -188,6 +188,7 @@ func TestParseError(t *testing.T) {
 		{"[section] something", "ini: synthax error on line 1: unexpected \"s\" after section closed"},
 		{"[]", "ini: synthax error on line 1: section can't be empty"},
 		{"[ ]", "ini: synthax error on line 1: section can't be empty"},
+		{"[section]\n[section]", "ini: synthax error on line 2: section \"section\" already exists"},
 	}
 
 	for _, test := range tests {
