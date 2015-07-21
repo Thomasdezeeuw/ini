@@ -6,6 +6,10 @@
 Ini is a [Go](https://golang.org/) package for for parsing ini (or cfg) files.
 See [Godoc](https://godoc.org/github.com/Thomasdezeeuw/ini) for the API.
 
+## Stable
+
+The api is now stable and will remain stable until version 2 is released.
+
 ## Installation
 
 Run the following line to install.
