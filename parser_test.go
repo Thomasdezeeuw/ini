@@ -135,6 +135,7 @@ func TestParse(t *testing.T) {
 		{"[sec;tion]", Config{Global: {}, "sec;tion": {}}},
 		{"[ s e c t i o n ]", Config{Global: {}, "s e c t i o n": {}}},
 
+		{"", Config{Global: {}}},
 		{"; comment", Config{Global: {}}},
 		{"key=value\n; comment", Config{Global: {"key": "value"}}},
 		{"[section]\n\nkey=value", Config{Global: {}, "section": {"key": "value"}}},

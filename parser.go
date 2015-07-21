@@ -26,18 +26,20 @@ const (
 )
 
 type parser struct {
-	Config            Config
-	scanner           *bufio.Scanner
-	currentSection    string
-	currentlineNumber int
+	Config         Config
+	scanner        *bufio.Scanner
+	currentSection string
 }
 
 func (p *parser) parse() error {
+	var currentlineNumber int
+
 	for p.scanner.Scan() {
 		line := p.scanner.Bytes()
+		currentlineNumber++
 
 		if err := p.handleLine(line); err != nil {
-			return createSynthaxError(p.currentlineNumber, err.Error())
+			return createSynthaxError(currentlineNumber, err.Error())
 		}
 	}
 
@@ -49,14 +51,13 @@ func (p *parser) parse() error {
 
 func (p *parser) handleLine(line []byte) error {
 	line = bytes.TrimSpace(line)
-	p.currentlineNumber++
-
 	if len(line) == 0 {
 		return nil
 	}
 
 	switch line[0] {
 	case commentStart:
+		return nil
 	case sectionStart:
 		sectionName, err := parseSection(line)
 		if err != nil {
