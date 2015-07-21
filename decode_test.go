@@ -75,7 +75,7 @@ type Slices struct {
 	F64      []float64
 }
 
-func TestConfigScan(t *testing.T) {
+func TestConfigDecode(t *testing.T) {
 	t.Parallel()
 	c := Config{
 		Global: {
@@ -133,8 +133,8 @@ func TestConfigScan(t *testing.T) {
 
 	var got completeTestData
 
-	if err := c.Scan(&got); err != nil {
-		t.Fatalf("Unexpected error scanning config into variable: %q", err.Error())
+	if err := c.Decode(&got); err != nil {
+		t.Fatalf("Unexpected error decoding config into variable: %q", err.Error())
 	}
 
 	strTimes := []string{"2015-05-10", "2015-05-09 11:07", "2015-05-08 11:07:30"}
@@ -200,7 +200,7 @@ func TestConfigScan(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(got, expected) {
-		t.Fatalf("Expected Config.Scan() to return %v, but got %v", expected, got)
+		t.Fatalf("Expected Config.Decode() to return %v, but got %v", expected, got)
 	}
 }
 
@@ -213,14 +213,14 @@ type smallSection struct {
 	Key2 string
 }
 
-func TestScan(t *testing.T) {
+func TestDecode(t *testing.T) {
 	t.Parallel()
 	content := "key = value\n[section]\nkey2=value2"
 
 	var got smallTestData
 
-	if err := Scan(strings.NewReader(content), &got); err != nil {
-		t.Fatalf("Unexpected error scanning: %q", err.Error())
+	if err := Decode(strings.NewReader(content), &got); err != nil {
+		t.Fatalf("Unexpected error decoding: %q", err.Error())
 	}
 
 	expected := smallTestData{
@@ -235,7 +235,7 @@ func TestScan(t *testing.T) {
 	}
 }
 
-func TestScanInto(t *testing.T) {
+func TestDecodeValue(t *testing.T) {
 	t.Parallel()
 
 	var host string
@@ -247,10 +247,10 @@ func TestScanInto(t *testing.T) {
 		},
 	}
 
-	if err := ScanInto(conf[Global]["host"], &host); err != nil {
-		t.Fatalf("Unexpected error scanning variable: %s", err.Error())
-	} else if err := ScanInto(conf[Global]["port"], &port); err != nil {
-		t.Fatalf("Unexpected error scanning variable: %s", err.Error())
+	if err := DecodeValue(conf[Global]["host"], &host); err != nil {
+		t.Fatalf("Unexpected error decoding variable: %s", err.Error())
+	} else if err := DecodeValue(conf[Global]["port"], &port); err != nil {
+		t.Fatalf("Unexpected error decoding variable: %s", err.Error())
 	}
 
 	if expected := "localhost"; host != expected {
@@ -261,7 +261,7 @@ func TestScanInto(t *testing.T) {
 	}
 }
 
-func TestScanIntoNotPointerError(t *testing.T) {
+func TestDecodeValueNotPointerError(t *testing.T) {
 	t.Parallel()
 
 	var ui8 uint8
@@ -271,8 +271,8 @@ func TestScanIntoNotPointerError(t *testing.T) {
 		},
 	}
 
-	err := ScanInto(conf[Global]["ui8"], ui8)
-	expected := "ini: ScanInto requires a pointer to a destination value"
+	err := DecodeValue(conf[Global]["ui8"], ui8)
+	expected := "ini: DecodeValue requires a pointer to a destination value"
 	if err == nil {
 		t.Fatal("Expected an error, but didn't get one")
 	} else if err.Error() != expected {
@@ -281,7 +281,7 @@ func TestScanIntoNotPointerError(t *testing.T) {
 	}
 }
 
-func TestScanIntoOverflowError(t *testing.T) {
+func TestDecodeValueOverflowError(t *testing.T) {
 	t.Parallel()
 
 	var ui8 uint8
@@ -291,7 +291,7 @@ func TestScanIntoOverflowError(t *testing.T) {
 		},
 	}
 
-	err := ScanInto(conf[Global]["ui8"], &ui8)
+	err := DecodeValue(conf[Global]["ui8"], &ui8)
 	expected := "ini: can't convert '500' to type uint8, it overflows the type"
 	if err == nil {
 		t.Fatal("Expected an error, but didn't get one")

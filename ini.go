@@ -3,7 +3,7 @@
 // Licensed onder the MIT license that can be found in the LICENSE file.
 
 // Package ini parses an ini formatted file. The parsed configuration can be
-// scanned into a variable or used directly.
+// decoded into a variable or used directly.
 package ini
 
 import (
@@ -80,8 +80,8 @@ func (c *Config) buffer() *bytes.Buffer {
 	return &result
 }
 
-// Scan scans a configuration into a struct. Any properties to be set need to
-// be public. Keys are renamed, whitespace is removed and keys start with a
+// Decode decodes a configuration into a struct. Any properties to be set need
+// to be public. Keys are renamed, whitespace is removed and keys start with a
 // capaital, like so:
 //
 //	"my key" -> "MyKey"
@@ -100,12 +100,11 @@ func (c *Config) buffer() *bytes.Buffer {
 //
 //	"2006-01-02", "2006-01-02 15:04", "2006-01-02 15:04:05"
 //
-// Duration is also supported, it uses `time.ParseDuration` so for supported
-// format see the seperate documentation.
+// Duration is also supported, see `time.ParseDuration` for the documentation.
 //
-// *Note underneath Scan uses the reflect package which isn't great for
+// *Note underneath Decode uses the reflect package which isn't great for
 // performance, so use it with care.
-func (c *Config) Scan(dst interface{}) error {
+func (c *Config) Decode(dst interface{}) error {
 	valuePtr := reflect.ValueOf(dst)
 	value := reflect.Indirect(valuePtr)
 
@@ -113,7 +112,7 @@ func (c *Config) Scan(dst interface{}) error {
 	// struct we can't set/change any keys on it, in either case we can't do
 	// anything with the value.
 	if valuePtr.Kind() != reflect.Ptr || value.Kind() != reflect.Struct {
-		return errors.New("ini: Config.Scan requires a pointer to a struct")
+		return errors.New("ini: Config.Decode requires a pointer to a struct")
 	}
 
 	for sectionName, section := range *c {
@@ -134,7 +133,7 @@ func (c *Config) Scan(dst interface{}) error {
 				if sectionName == Global {
 					sectionName = globalName
 				}
-				return fmt.Errorf("ini: error scanning %q in section %q: %s",
+				return fmt.Errorf("ini: error decoding %q in section %q: %s",
 					key, sectionName, err.Error())
 			}
 		}

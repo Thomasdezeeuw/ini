@@ -35,23 +35,23 @@ var (
 	typeTime     = reflect.TypeOf(time.Time{})
 )
 
-// Scan scans a configuration into a struct or map, see `Config.Scan`.
-func Scan(r io.Reader, dst interface{}) error {
+// Decode decodes a configuration into a struct or map, see `Config.Decode`.
+func Decode(r io.Reader, dst interface{}) error {
 	c, err := Parse(r)
 	if err != nil {
 		return err
 	}
-	return c.Scan(dst)
+	return c.Decode(dst)
 }
 
-// ScanInto scans a single configuration value into a variable.
-func ScanInto(value string, dst interface{}) error {
+// DecodeValue decodes a single configuration value into a variable.
+func DecodeValue(value string, dst interface{}) error {
 	valuePtr := reflect.ValueOf(dst)
 	v := reflect.Indirect(valuePtr)
 
 	// If it's not a pointer we can't change the original value.
 	if valuePtr.Kind() != reflect.Ptr {
-		return errors.New("ini: ScanInto requires a pointer to a destination value")
+		return errors.New("ini: DecodeValue requires a pointer to a destination value")
 	} else if !v.IsValid() || !v.CanSet() {
 		return errors.New("ini: can't change value of destination value")
 	}
