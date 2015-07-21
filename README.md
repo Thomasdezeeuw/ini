@@ -8,7 +8,14 @@ See [Godoc](https://godoc.org/github.com/Thomasdezeeuw/ini) for the API.
 
 ## Stable
 
-The api is now stable and will remain stable until version 2 is released.
+The api is now stable and will remain stable until version 2 is released. To
+prove how stable `ini.Parse` is, it battled [go-fuzz](https://github.com/dvyukov/go-fuzz)
+for 10 hours, processing over 1.1 billion randoimzed inputs and won:
+
+```
+2015/07/21 23:58:54 slaves: 8, corpus: 611 (3h8m ago), crashers: 0, restarts: 1/
+10000, execs: 1100121441 (30462/sec), cover: 493, uptime: 10h1m
+```
 
 ## Installation
 
