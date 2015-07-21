@@ -10,7 +10,7 @@ See [Godoc](https://godoc.org/github.com/Thomasdezeeuw/ini) for the API.
 
 The api is now stable and will remain stable until version 2 is released. To
 prove how stable `ini.Parse` is, it battled [go-fuzz](https://github.com/dvyukov/go-fuzz)
-for 10 hours, processing over 1.1 billion randoimzed inputs and won:
+for 10 hours, processing over 1.1 billion randomized inputs and won:
 
 ```
 2015/07/21 23:58:54 slaves: 8, corpus: 611 (3h8m ago), crashers: 0, restarts: 1/
