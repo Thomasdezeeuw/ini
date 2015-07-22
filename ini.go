@@ -98,7 +98,8 @@ func (c *Config) buffer() *bytes.Buffer {
 //
 // Time is supported with the following formats:
 //
-//	"2006-01-02", "2006-01-02 15:04", "2006-01-02 15:04:05"
+//	"2006-01-02", "2006-01-02 15:04", "2006-01-02 15:04:05", time.RFC3339,
+//	time.RFC1123 and time.RFC822
 //
 // Duration is also supported, see `time.ParseDuration` for the documentation.
 //

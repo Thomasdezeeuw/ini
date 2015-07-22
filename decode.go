@@ -14,7 +14,7 @@ import (
 )
 
 var timeFormats = []string{"2006-01-02", "2006-01-02 15:04",
-	"2006-01-02 15:04:05"}
+	"2006-01-02 15:04:05", time.RFC3339, time.RFC1123, time.RFC822}
 
 var (
 	typeString   = reflect.TypeOf("")
