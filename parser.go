@@ -124,12 +124,8 @@ func newParser(r io.Reader) *parser {
 	}
 }
 
+// Always assumes the first character is an opening bracket.
 func parseSection(line []byte) (string, error) {
-	// This should not be possible in regular execution, but just in case.
-	if line[0] != sectionStart {
-		return "", fmt.Errorf("section should start with %q", string(sectionStart))
-	}
-
 	l := len(line)
 	if l > 2 {
 		l -= 2
