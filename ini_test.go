@@ -101,9 +101,18 @@ func TestComplete(t *testing.T) {
 
 	var buf bytes.Buffer
 	c.WriteTo(&buf)
+	got := buf.String()
 
 	c2, err := Parse(&buf)
 	if !reflect.DeepEqual(c, c2) {
 		t.Fatalf("Expected %v, but got %v", c, c2)
+	}
+
+	gotString := c.String()
+	gotBytes := string(c.Bytes())
+
+	if got != gotString || got != gotBytes {
+		t.Fatalf("Expected Config.String(), Config.Bytes() and Config.WriteTo() to "+
+			"return the same string, but got: \n%q, \n%q and \n%q", gotString, gotBytes, got)
 	}
 }
