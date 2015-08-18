@@ -63,19 +63,13 @@ func (p *parser) handleLine(line []byte) error {
 		if err != nil {
 			return err
 		}
-
-		if err := p.updateSection(sectionName); err != nil {
-			return err
-		}
+		return p.updateSection(sectionName)
 	default:
 		key, value, err := parseKeyValue(line)
 		if err != nil {
 			return err
 		}
-
-		if err := p.addKeyValue(key, value); err != nil {
-			return err
-		}
+		return p.addKeyValue(key, value)
 	}
 
 	return nil
