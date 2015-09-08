@@ -298,5 +298,7 @@ func TestDecodeValueOverflowError(t *testing.T) {
 	} else if err.Error() != expected {
 		t.Fatalf("Expected error message to be %q, but got %q",
 			expected, err.Error())
+	} else if !IsOverflowError(err) {
+		t.Fatal("Expected error to be an overflow error, but it isn't")
 	}
 }
