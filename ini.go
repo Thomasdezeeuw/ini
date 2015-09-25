@@ -14,6 +14,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"unicode"
 )
 
 // Global is the section name for key-values not under a section. It is used
@@ -80,6 +81,11 @@ func (c *Config) buffer() *bytes.Buffer {
 	return &result
 }
 
+type fieldCombo struct {
+	value reflect.Value
+	field reflect.StructField
+}
+
 // Decode decodes a configuration into a struct. Any properties to be set need
 // to be public. Keys are renamed, whitespace is removed and keys start with a
 // capaital, like so:
@@ -116,17 +122,71 @@ func (c *Config) Decode(dst interface{}) error {
 		return errors.New("ini: Config.Decode requires a pointer to a struct")
 	}
 
-	for sectionName, section := range *c {
-		sectionValue := getSectionValue(value, sectionName)
-		if !sectionValue.IsValid() || sectionValue.Kind() != reflect.Struct {
+	dstType := value.Type()
+	for i := value.NumField() - 1; i >= 0; i-- {
+		field := value.Field(i)
+		if !field.IsValid() || !field.CanSet() {
 			continue
 		}
 
-		for key, value := range section {
-			key = renameToPublicName(key)
+		strField := dstType.Field(i)
+		var fields []fieldCombo
+		var sectionNames = []string{""}
 
-			keyValue := sectionValue.FieldByName(key)
-			if !keyValue.IsValid() || !keyValue.CanSet() {
+		structFieldType := field.Type()
+		if kind := field.Kind(); kind == reflect.Struct &&
+			structFieldType != typeDuration && structFieldType != typeTime {
+			sectionName := strField.Tag.Get("ini")
+			if sectionName != "" {
+				sectionNames[0] = sectionName
+			} else {
+				sectionNames = possibleNames(strField.Name)
+			}
+
+			for i := field.NumField() - 1; i >= 0; i-- {
+				structField := field.Field(i)
+				if !structField.IsValid() || !structField.CanSet() {
+					continue
+				}
+				structFieldType := structFieldType.Field(i)
+				fields = append(fields, fieldCombo{structField, structFieldType})
+			}
+		} else {
+			fields = []fieldCombo{{field, strField}}
+		}
+
+		for _, combo := range fields {
+			value := combo.value
+			field := combo.field
+
+			var keys []string
+			if key := field.Tag.Get("ini"); key != "" {
+				keys = []string{key}
+			} else {
+				keys = possibleNames(field.Name)
+			}
+
+			if err := c.trySetReflect(sectionNames, keys, value); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// TrySetReflect tries the givens section and keys combination to get the value
+// from the config and then sets the field if a value if found.
+func (c *Config) trySetReflect(sectionNames []string, keys []string, keyValue reflect.Value) error {
+	for _, sectionName := range sectionNames {
+		section := (*c)[sectionName]
+		if len(section) == 0 {
+			continue
+		}
+
+		for _, key := range keys {
+			value, ok := section[key]
+			if !ok {
 				continue
 			}
 
@@ -137,10 +197,63 @@ func (c *Config) Decode(dst interface{}) error {
 				return fmt.Errorf("ini: error decoding %q in section %q: %s",
 					key, sectionName, err.Error())
 			}
+
+			return nil
 		}
 	}
 
 	return nil
+}
+
+var seperators = []string{"", "_", "-", " "}
+
+// PossibleNames generates possible names for a given name. It splits up the
+// given name on upper case and underscores (see getNameParts) and then joins
+// them using nothing (""), underscores, dashes and spaces (see seperators
+// variable).
+func possibleNames(name string) []string {
+	nameParts := getNameParts(name)
+
+	if len(nameParts) == 1 {
+		return []string{name, strings.ToLower(name)}
+	}
+
+	var names []string
+	for _, seperator := range seperators {
+		var newName string
+		for _, namePart := range nameParts {
+			newName += namePart
+			newName += seperator
+		}
+		newName = newName[:len(newName)-len(seperator)]
+
+		names = append(names, strings.ToLower(newName))
+		names = append(names, newName)
+	}
+
+	return names
+}
+
+// getNameParts splits a name on upper case and undersocres, it returns the
+// split parts.
+// todo: maybe split on first number?
+func getNameParts(name string) []string {
+	if name == "" {
+		return []string{""}
+	}
+
+	var nameParts = []string{name[:1]}
+	var i int
+	for _, r := range name[1:] {
+		if r == '_' || unicode.IsUpper(r) {
+			nameParts = append(nameParts, string(r))
+			i++
+		} else {
+			nameParts[i] += string(r)
+		}
+	}
+
+	return nameParts
 }
 
 func getMapsKeysAlpha(m map[string]string) []string {

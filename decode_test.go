@@ -301,3 +301,51 @@ func TestDecodeValueOverflowError(t *testing.T) {
 		t.Fatal("Expected error to be an overflow error, but it isn't")
 	}
 }
+
+type tagTestData struct {
+	MyKey1   string `ini:"my_key1"`
+	MyKey2   string
+	TestKeys TestKeys `ini:"my_keys"`
+}
+
+type TestKeys struct {
+	MyKey1 string
+	MyKey2 string
+	MyKey3 string
+	MyKey4 string
+	MyKey5 string
+	MyKey6 string
+	MyKey7 string
+	MyKey8 string
+}
+
+func TestDecodeTag(t *testing.T) {
+	t.Parallel()
+	content := "my_key1=value1\nMyKey2=value2\n[my_keys]\nmykey1=value1\n" +
+		"MyKey2=value2\nmy_key3=value3\nMy_Key4=value4\nmy-key5=value5\n" +
+		"My-Key6=value6\nmy key7=value7\nMy Key8=value8\n"
+
+	var got tagTestData
+	if err := Decode(strings.NewReader(content), &got); err != nil {
+		t.Fatalf("Unexpected error decoding: %q", err.Error())
+	}
+
+	expected := tagTestData{
+		MyKey1: "value1",
+		MyKey2: "value2",
+		TestKeys: TestKeys{
+			MyKey1: "value1",
+			MyKey2: "value2",
+			MyKey3: "value3",
+			MyKey4: "value4",
+			MyKey5: "value5",
+			MyKey6: "value6",
+			MyKey7: "value7",
+			MyKey8: "value8",
+		},
+	}
+
+	if !reflect.DeepEqual(got, expected) {
+		t.Fatalf("Expected %v, but got %v", expected, got)
+	}
+}
