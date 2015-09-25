@@ -218,7 +218,6 @@ func TestDecode(t *testing.T) {
 	content := "key = value\n[section]\nkey2=value2"
 
 	var got smallTestData
-
 	if err := Decode(strings.NewReader(content), &got); err != nil {
 		t.Fatalf("Unexpected error decoding: %q", err.Error())
 	}
@@ -231,7 +230,7 @@ func TestDecode(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(got, expected) {
-		t.Fatalf("Expected %v, but got %v", got, expected)
+		t.Fatalf("Expected %v, but got %v", expected, got)
 	}
 }
 
