@@ -81,6 +81,15 @@ func (c *Config) buffer() *bytes.Buffer {
 	return &result
 }
 
+func getMapsKeysAlpha(m map[string]string) []string {
+	keys := make([]string, 0, len(m))
+	for key := range m {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
 type fieldCombo struct {
 	value reflect.Value
 	field reflect.StructField
@@ -254,15 +263,6 @@ func getNameParts(name string) []string {
 	}
 
 	return nameParts
-}
-
-func getMapsKeysAlpha(m map[string]string) []string {
-	keys := make([]string, 0, len(m))
-	for key := range m {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-	return keys
 }
 
 // GetConfigSectionsAlpha sort the sections alphabetically with the global
