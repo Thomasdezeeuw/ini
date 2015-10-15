@@ -1,3 +1,7 @@
+// Copyright (C) 2015 Thomas de Zeeuw.
+//
+// Licensed onder the MIT license that can be found in the LICENSE file.
+
 package main
 
 import (

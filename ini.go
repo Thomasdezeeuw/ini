@@ -1,6 +1,6 @@
 // Copyright (C) 2015 Thomas de Zeeuw.
 //
-// Licensed onder the MIT license that can be found in the LICENSE file.
+// Licensed under the MIT license that can be found in the LICENSE file.
 
 // Package ini parses an ini formatted file. The parsed configuration can be
 // decoded into a variable or used directly.
