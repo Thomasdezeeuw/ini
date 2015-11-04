@@ -1,7 +1,7 @@
 sudo: false
 os:
-	- linux
-	- osx
+  - linux
+  - osx
 language: go
 go:
   - 1.3
@@ -9,15 +9,15 @@ go:
   - 1.5
   - tip
 install:
- - go get ./...
- - go get -u github.com/golang/lint/golint
- - go get -u github.com/remyoudompheng/go-misc/deadcode
- - go get -u github.com/fzipp/gocyclo
- - go get -u github.com/golang/lint
+  - go get ./...
+  - go get -u github.com/golang/lint/golint
+  - go get -u github.com/remyoudompheng/go-misc/deadcode
+  - go get -u github.com/fzipp/gocyclo
+  - go get -u github.com/golang/lint
 script:
-	- gofmt -s -d *.go
-	- go vet
-	- deadcode
-#	- gocyclo -over 10 *.go
-	- golint
-	- go test -race
+  - gofmt -s -d *.go
+  - go vet
+  - deadcode
+# - gocyclo -over 10 *.go
+  - golint
+  - go test -race
