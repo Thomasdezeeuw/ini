@@ -13,11 +13,9 @@ install:
   - go get -u github.com/golang/lint/golint
   - go get -u github.com/remyoudompheng/go-misc/deadcode
   - go get -u github.com/fzipp/gocyclo
-  - go get -u github.com/golang/lint
 script:
   - gofmt -s -d *.go
   - go vet
   - deadcode
 # - gocyclo -over 10 *.go
-  - golint
   - go test -race
