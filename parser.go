@@ -19,7 +19,6 @@ const (
 	sectionStart byte = '['
 	sectionEnd   byte = ']'
 	escape       byte = '\\'
-	lineEnd      byte = '\n'
 	doubleQuote  byte = '"'
 	singleQuote  byte = '\''
 	nilQuote     byte = 0
@@ -71,8 +70,6 @@ func (p *parser) handleLine(line []byte) error {
 		}
 		return p.addKeyValue(key, value)
 	}
-
-	return nil
 }
 
 func (p *parser) updateSection(sectionName string) error {

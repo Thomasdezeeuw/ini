@@ -398,24 +398,6 @@ func setTime(keyValue *reflect.Value, value string) error {
 	return createCovertionError(value, "time.Time")
 }
 
-func getSectionValue(keyValue reflect.Value, sectionName string) reflect.Value {
-	if sectionName == Global {
-		return keyValue
-	}
-
-	sectionName = renameToPublicName(sectionName)
-	return keyValue.FieldByName(sectionName)
-}
-
-// Rename the key to a public name of a struct, e.g.
-//
-//	"my key" -> "MyKey"
-func renameToPublicName(name string) string {
-	name = strings.Title(name)
-	name = strings.Replace(name, " ", "", -1)
-	return name
-}
-
 func getValues(value string) []string {
 	values := strings.Split(value, ",")
 	for i, value := range values {
