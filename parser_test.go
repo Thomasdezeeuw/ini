@@ -5,18 +5,40 @@
 package ini
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
 	"testing/iotest"
 )
 
+type ParseTest struct {
+	content string
+	config  Config
+}
+
 func TestParse(t *testing.T) {
 	t.Parallel()
-	tests := []struct {
-		content string
-		config  Config
-	}{
+	tests := []ParseTest{
+		{"", Config{Global: {}}},
+		{"; comment", Config{Global: {}}},
+		{"key=value\n; comment", Config{Global: {"key": "value"}}},
+		{"[section]\n\nkey=value", Config{Global: {}, "section": {"key": "value"}}},
+		{"key=value\n[section]\nkey=value", Config{Global: {"key": "value"},
+			"section": {"key": "value"}}},
+		{"key=value\n[section]\nkey=value\n\n[section2]\nkey2 = value2",
+			Config{Global: {"key": "value"}, "section": {"key": "value"},
+				"section2": {"key2": "value2"}}},
+	}
+
+	if err := testParser(tests); err != nil {
+		t.Fatal(err.Error())
+	}
+}
+
+func TestParseKeyValueDoubleQoute(t *testing.T) {
+	t.Parallel()
+	tests := []ParseTest{
 		{"key=value", Config{Global: {"key": "value"}}}, // Simple.
 		{"k e y=v a l u e", Config{Global: {"k e y": "v a l u e"}}},
 		{"key = value", Config{Global: {"key": "value"}}},
@@ -71,7 +93,16 @@ func TestParse(t *testing.T) {
 		{`"key"="" ;`, Config{Global: {"key": ""}}},
 		{`"key" = "";`, Config{Global: {"key": ""}}},
 		{`"key" = "" ;`, Config{Global: {"key": ""}}},
+	}
 
+	if err := testParser(tests); err != nil {
+		t.Fatal(err.Error())
+	}
+}
+
+func TestParseKeyValueSingleQoute(t *testing.T) {
+	t.Parallel()
+	tests := []ParseTest{
 		{"'key'=value", Config{Global: {"key": "value"}}}, // Single qoute.
 		{"'key' = value", Config{Global: {"key": "value"}}},
 		{"key='value'", Config{Global: {"key": "value"}}},
@@ -112,7 +143,16 @@ func TestParse(t *testing.T) {
 		{"'key'='' ;", Config{Global: {"key": ""}}},
 		{"'key' = '';", Config{Global: {"key": ""}}},
 		{"'key' = '' ;", Config{Global: {"key": ""}}},
+	}
 
+	if err := testParser(tests); err != nil {
+		t.Fatal(err.Error())
+	}
+}
+
+func TestParseKeyValueMisc(t *testing.T) {
+	t.Parallel()
+	tests := []ParseTest{
 		{`"=key"=value`, Config{Global: {"=key": "value"}}}, // Escaped qoutes.
 		{`"k\"ey"=value`, Config{Global: {`k"ey`: "value"}}},
 		{`key="val\"ue="`, Config{Global: {"key": `val"ue=`}}},
@@ -128,35 +168,42 @@ func TestParse(t *testing.T) {
 		{`"ke;y"="val;ue"`, Config{Global: {"ke;y": "val;ue"}}},
 		{`key==value`, Config{Global: {"key": "=value"}}},
 		{`key=value=`, Config{Global: {"key": "value="}}},
+	}
 
+	if err := testParser(tests); err != nil {
+		t.Fatal(err.Error())
+	}
+}
+
+func TestParseSection(t *testing.T) {
+	t.Parallel()
+	tests := []ParseTest{
 		{"[section]", Config{Global: {}, "section": {}}},
 		{"[section];comment", Config{Global: {}, "section": {}}},
 		{"[section] ; comment", Config{Global: {}, "section": {}}},
 		{"[sec;tion]", Config{Global: {}, "sec;tion": {}}},
 		{"[ s e c t i o n ]", Config{Global: {}, "s e c t i o n": {}}},
-
-		{"", Config{Global: {}}},
-		{"; comment", Config{Global: {}}},
-		{"key=value\n; comment", Config{Global: {"key": "value"}}},
-		{"[section]\n\nkey=value", Config{Global: {}, "section": {"key": "value"}}},
-		{"key=value\n[section]\nkey=value", Config{Global: {"key": "value"},
-			"section": {"key": "value"}}},
-		{"key=value\n[section]\nkey=value\n\n[section2]\nkey2 = value2",
-			Config{Global: {"key": "value"}, "section": {"key": "value"},
-				"section2": {"key2": "value2"}}},
 	}
 
+	if err := testParser(tests); err != nil {
+		t.Fatal(err.Error())
+	}
+}
+
+func testParser(tests []ParseTest) error {
 	for _, test := range tests {
 		config, err := Parse(strings.NewReader(test.content))
 		if err != nil {
-			t.Fatalf("Unexpected error from Parse(%s): %s", test.content, err.Error())
+			return fmt.Errorf("Unexpected error from Parse(%s): %s", test.content, err.Error())
 		}
 
 		if !reflect.DeepEqual(config, test.config) {
-			t.Fatalf("Expected Parse(%s) to return %q, but got %q",
+			return fmt.Errorf("Expected Parse(%s) to return %q, but got %q",
 				test.content, test.config, config)
 		}
 	}
+
+	return nil
 }
 
 func TestParseError(t *testing.T) {
