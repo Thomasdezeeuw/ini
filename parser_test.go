@@ -154,7 +154,7 @@ func TestParse(t *testing.T) {
 
 		if !reflect.DeepEqual(config, test.config) {
 			t.Fatalf("Expected Parse(%s) to return %q, but got %q",
-				test.content, config, test.config)
+				test.content, test.config, config)
 		}
 	}
 }
