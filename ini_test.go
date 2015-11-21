@@ -11,25 +11,6 @@ import (
 	"testing"
 )
 
-func TestPossibleQoute(t *testing.T) {
-	t.Parallel()
-	tests := []struct {
-		input    string
-		expected string
-	}{
-		{`my "key"`, `"my \"key\""`},
-		{`my 'key'`, `"my 'key'"`},
-	}
-
-	for _, test := range tests {
-		got := possibleQoute(test.input)
-		if got != test.expected {
-			t.Fatalf("Expected possibleQoute(`%s`) to return `%s`, but got `%s`",
-				test.input, test.expected, got)
-		}
-	}
-}
-
 func TestGetKeysAlpha(t *testing.T) {
 	t.Parallel()
 	input := map[string]string{
