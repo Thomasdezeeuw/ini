@@ -13,6 +13,7 @@ import (
 	"io"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -70,9 +71,8 @@ func (c *Config) buffer() *bytes.Buffer {
 		section := (*c)[sectionName]
 		keys := getMapsKeysAlpha(section)
 		for _, key := range keys {
-			value := possibleQoute(section[key])
-			key = possibleQoute(key)
-
+			value := strconv.Quote(section[key])
+			key = strconv.Quote(key)
 			result.WriteString(key + "=" + value + "\n")
 		}
 		result.WriteString("\n")
@@ -275,19 +275,4 @@ func getConfigSectionsAlpha(c Config) []string {
 	}
 	sort.Strings(sections)
 	return append([]string{Global}, sections...)
-}
-
-// PossibleQoute adds qouting to key or values when needed. For example:
-//
-//	`my key`   -> `my key`       // no qoutes.
-//	`my "key"` -> `"my \"key\""` // qoutes and escaped qoutes.
-//	`my 'key'` -> `"my 'key'"`   // just qoutes.
-func possibleQoute(value string) string {
-	if strings.Index(value, `"`) != -1 {
-		return `"` + strings.Replace(value, `"`, `\"`, -1) + `"`
-	} else if strings.Index(value, `'`) != -1 {
-		return `"` + value + `"`
-	}
-
-	return value
 }
