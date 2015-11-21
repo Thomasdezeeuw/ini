@@ -119,7 +119,7 @@ func newParser(r io.Reader) *parser {
 func parseSection(line []byte) (string, error) {
 	l := len(line)
 	if l > 2 {
-		l -= 2
+		l -= 2 // Both brackets.
 	}
 	var sectionName = make([]byte, 0, l)
 	var sectionEnded bool

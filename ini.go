@@ -222,7 +222,6 @@ var seperators = []string{"", "_", "-", " "}
 // variable).
 func possibleNames(name string) []string {
 	nameParts := getNameParts(name)
-
 	if len(nameParts) == 1 {
 		return []string{name, strings.ToLower(name)}
 	}
