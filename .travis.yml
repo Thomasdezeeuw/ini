@@ -3,6 +3,8 @@ os:
   - linux
   - osx
 language: go
+env:
+  - secure: "a+R1viogNL3/RL4K/PxpyRf84i46bd7r6ud/gRLwt0P0Sn5OPxVwwNrqonJN+n0SqKH2zhLP4fBclHbCj4+E8qWSUG0zLpwHN6163y0Svv4azquhYW6v52MGHLIuhCl8Pj2L7aYwzJoIIaYT+Tt/0IOShVq83VUBZZhFalYIYyk="
 go:
   - 1.3
   - 1.4
@@ -13,9 +15,12 @@ install:
   - go get -u github.com/golang/lint/golint
   - go get -u github.com/remyoudompheng/go-misc/deadcode
   - go get -u github.com/fzipp/gocyclo
+  - go get golang.org/x/tools/cmd/cover
+  - go get github.com/mattn/goveralls
 script:
   - gofmt -s -d *.go
   - go vet
   - deadcode
 # - gocyclo -over 10 *.go
-  - go test -race
+  - go test -race -v -covermode count -coverprofile coverage.out
+  - goveralls -coverprofile coverage.out -service travis-ci -repotoken $COVERALLS_TOKEN
