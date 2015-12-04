@@ -117,34 +117,29 @@ func newParser(r io.Reader) *parser {
 
 // Always assumes the first character is an opening bracket.
 func parseSection(line []byte) (string, error) {
-	l := len(line)
-	if l > 2 {
-		l -= 2 // Both brackets.
-	}
-	var sectionName = make([]byte, 0, l)
+	var end int
 	var sectionEnded bool
 
 	// Skipping the opening bracket.
-	for i := 1; i < len(line); i++ {
+	for i, l := 1, len(line); i < l; i++ {
 		b := line[i]
 
 		if b == sectionEnd {
 			sectionEnded = true
+			end = i
 			continue
 		} else if b == commentStart && sectionEnded {
 			break
 		} else if sectionEnded && !unicode.IsSpace(rune(b)) {
 			return "", fmt.Errorf("unexpected %q after section closed", string(b))
 		}
-
-		sectionName = append(sectionName, b)
 	}
 
 	if !sectionEnded {
 		return "", errors.New("unclosed section")
 	}
 
-	section := string(bytes.TrimSpace(sectionName))
+	section := string(bytes.TrimSpace(line[1:end]))
 	if len(section) == 0 {
 		return "", errors.New("section can't be empty")
 	}
