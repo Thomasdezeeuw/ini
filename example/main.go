@@ -52,7 +52,9 @@ func getConfig(filepath string) config {
 	// But we usually want to use our own custom configuration. We can decode our
 	// configuration into our own configuration variable, like so:
 	var conf config
-	c.Decode(&conf)
+	if err := c.Decode(&conf); err != nil {
+		panic(err)
+	}
 
 	// And then set another configuration option.
 	conf.HTTP.Address = c["HTTP"]["Host"] + ":" + c["HTTP"]["Port"]
