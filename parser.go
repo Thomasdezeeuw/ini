@@ -96,7 +96,7 @@ func (p *parser) addKeyValue(key, value string) error {
 
 // Parse parses ini formatted input.
 //
-// *Note the reader already gets buffered, so there is no need to buffer it
+// Note: the reader already gets buffered, so there is no need to buffer it
 // youself.
 func Parse(r io.Reader) (Config, error) {
 	p := newParser(r)
@@ -115,7 +115,7 @@ func newParser(r io.Reader) *parser {
 	}
 }
 
-// Always assumes the first character is an opening bracket.
+// Assumes the first character is always an opening bracket.
 func parseSection(line []byte) (string, error) {
 	var end int
 	var sectionEnded bool
