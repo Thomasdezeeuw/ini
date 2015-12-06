@@ -87,6 +87,7 @@ func (c *Config) buffer() *bytes.Buffer {
 	return &result
 }
 
+// GetSectionKeysAlpha sorts the keys in a section alphabetically.
 func getSectionKeysAlpha(m Section) []string {
 	keys := make([]string, 0, len(m))
 	for key := range m {
