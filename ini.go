@@ -87,6 +87,19 @@ func (c *Config) buffer() *bytes.Buffer {
 	return &result
 }
 
+// GetConfigSectionsAlpha sorts the sections alphabetically with the global
+// section first.
+func getConfigSectionsAlpha(c Config) []string {
+	sections := make([]string, 0, len(c))
+	for section := range c {
+		if section != Global {
+			sections = append(sections, section)
+		}
+	}
+	sort.Strings(sections)
+	return append([]string{Global}, sections...)
+}
+
 // GetSectionKeysAlpha sorts the keys in a section alphabetically.
 func getSectionKeysAlpha(m Section) []string {
 	keys := make([]string, 0, len(m))
@@ -277,17 +290,4 @@ func getNameParts(name string) []string {
 	}
 
 	return nameParts
-}
-
-// GetConfigSectionsAlpha sort the sections alphabetically with the global
-// section first.
-func getConfigSectionsAlpha(c Config) []string {
-	sections := make([]string, 0, len(c))
-	for section := range c {
-		if section != Global {
-			sections = append(sections, section)
-		}
-	}
-	sort.Strings(sections)
-	return append([]string{Global}, sections...)
 }
