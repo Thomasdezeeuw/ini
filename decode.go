@@ -68,7 +68,7 @@ func setReflectValue(keyValue *reflect.Value, value string) error {
 	case typeString:
 		keyValue.SetString(value)
 	case typeBool:
-		setBool(keyValue, value)
+		return setBool(keyValue, value)
 	case typeInt, typeInt8, typeInt16, typeInt32, typeInt64:
 		return setInt(keyValue, value)
 	case typeUint, typeUint8, typeUint16, typeUint32, typeUint64:
@@ -131,21 +131,23 @@ func setBools(keyValue *reflect.Value, values []string) error {
 	var bs = make([]bool, len(values))
 	for i, value := range values {
 		bValue := reflect.Indirect(reflect.ValueOf(&bs[i]))
-		setBool(&bValue, value)
+		if err := setBool(&bValue, value); err != nil {
+			return err
+		}
 	}
 	bsValue := reflect.ValueOf(bs)
 	keyValue.Set(bsValue)
 	return nil
 }
 
-// Returns true on "1" and "true" (case insensitive), anything returns false.
-func setBool(keyValue *reflect.Value, value string) {
-	var b bool
-	value = strings.TrimSpace(value)
-	if value == "1" || strings.ToLower(value) == "true" {
-		b = true
+func setBool(keyValue *reflect.Value, value string) error {
+	b, err := strconv.ParseBool(value)
+	if err != nil {
+		return createCovertionError(value, keyValue.Kind().String())
 	}
+
 	keyValue.SetBool(b)
+	return nil
 }
 
 func setInts(keyValue *reflect.Value, values []string) error {

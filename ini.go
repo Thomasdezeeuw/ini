@@ -108,8 +108,8 @@ type fieldCombo struct {
 //
 // Booleans are supported aswell:
 //
-//	"1, true, TRUE" -> true
-//	"0, false, FALSE, anything else" -> false
+//	"1, t, T, TRUE, true, True" -> true
+//	"0, f, F, FALSE, false, False" -> false
 //
 // Time is supported with the following formats:
 //
