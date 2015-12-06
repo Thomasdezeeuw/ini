@@ -41,7 +41,13 @@ const globalName = "global"
 //
 //	value := config[ini.Global]["key"]
 //	value2, found := config[ini.Global]["key2"]
-type Config map[string]map[string]string
+type Config map[string]Section
+
+// Section holds the key value pairs inside a configuration.
+//
+//	section := config["section"]
+//	value, found := section["key"]
+type Section map[string]string
 
 // String returns an ini formatted configuration, ready to be written to a file.
 func (c *Config) String() string {
@@ -69,7 +75,7 @@ func (c *Config) buffer() *bytes.Buffer {
 		}
 
 		section := (*c)[sectionName]
-		keys := getMapsKeysAlpha(section)
+		keys := getSectionKeysAlpha(section)
 		for _, key := range keys {
 			value := strconv.Quote(section[key])
 			key = strconv.Quote(key)
@@ -81,7 +87,7 @@ func (c *Config) buffer() *bytes.Buffer {
 	return &result
 }
 
-func getMapsKeysAlpha(m map[string]string) []string {
+func getSectionKeysAlpha(m Section) []string {
 	keys := make([]string, 0, len(m))
 	for key := range m {
 		keys = append(keys, key)

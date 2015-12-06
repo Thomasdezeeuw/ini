@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func TestGetKeysAlpha(t *testing.T) {
+func TestGetSectionKeysAlpha(t *testing.T) {
 	t.Parallel()
 	input := map[string]string{
 		"a": "a",
@@ -22,7 +22,7 @@ func TestGetKeysAlpha(t *testing.T) {
 		"c": "c",
 	}
 
-	got := getMapsKeysAlpha(input)
+	got := getSectionKeysAlpha(input)
 	expects := []string{"a", "b", "c", "d", "e", "f"}
 
 	if len(got) != len(expects) {
