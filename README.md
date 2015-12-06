@@ -28,7 +28,7 @@ $ go get github.com/Thomasdezeeuw/ini
 
 ## Examples
 
-See the `example` directory for a complete example.
+See the `_examples` directory for a mulitple examples.
 
 ## License
 
