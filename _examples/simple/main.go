@@ -36,7 +36,7 @@ func main() {
 	// AppName will be "My app" and address is "example.com:80".
 
 	log.Println("Starting application: " + config[ini.Global]["Name"])
-	log.Println("Listening on address" + address)
+	log.Println("Listening on address " + address)
 
 	err = http.ListenAndServe(address, http.HandlerFunc(homeHandler))
 	if err != nil {
