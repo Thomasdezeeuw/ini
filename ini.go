@@ -101,6 +101,14 @@ type fieldCombo struct {
 //
 //	"my key" -> "MyKey"
 //
+// Tags are supported to define the key of a configuration. See below for a
+// small example, for more examples see the tags example in the _examples
+// directory.
+//
+//	struct {
+//		AppName `ini:"name"`
+//	}
+//
 // Slices are supported by using a comma separated list, like so:
 //
 //	"string1, string2" -> []string{"string1", "string2"}
@@ -118,7 +126,7 @@ type fieldCombo struct {
 //
 // Duration is also supported, see `time.ParseDuration` for the documentation.
 //
-// *Note underneath Decode uses the reflect package which isn't great for
+// Note: underneath Decode uses the reflect package which isn't great for
 // performance, so use it with care.
 func (c *Config) Decode(dst interface{}) error {
 	valuePtr := reflect.ValueOf(dst)
