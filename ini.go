@@ -245,11 +245,11 @@ func (c *Config) trySetReflect(sectionNames []string, keys []string, keyValue re
 	return nil
 }
 
-var seperators = []string{"", "_", "-", " "}
+var separators = []string{"", "_", "-", " "}
 
 // PossibleNames generates possible names for a given name. It splits up the
 // given name on upper case and underscores (see getNameParts) and then joins
-// them using nothing (""), underscores, dashes and spaces (see seperators
+// them using nothing (""), underscores, dashes and spaces (see separators
 // variable).
 func possibleNames(name string) []string {
 	nameParts := getNameParts(name)
@@ -258,7 +258,7 @@ func possibleNames(name string) []string {
 	}
 
 	var names []string
-	for _, seperator := range seperators {
+	for _, seperator := range separators {
 		var newName string
 		for _, namePart := range nameParts {
 			newName += namePart

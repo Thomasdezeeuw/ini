@@ -15,7 +15,7 @@ import (
 
 const (
 	commentStart byte = ';'
-	seperator    byte = '='
+	separator    byte = '='
 	sectionStart byte = '['
 	sectionEnd   byte = ']'
 	escape       byte = '\\'
@@ -149,46 +149,46 @@ func parseSection(line []byte) (string, error) {
 
 func parseKeyValue(line []byte) (key, value string, err error) {
 	var values [2][]byte
-	var areQouted [2]bool
-	var hasSeperator bool
+	var areQuoted [2]bool
+	var hasSeparator bool
 
 	// Keep track of the byte number for both the key and value.
 	for i, valueNumber := 0, 0; valueNumber <= 1; valueNumber++ {
-		var isQouted, isEscaped, nextShouldBeSeperator bool
-		var usedQouted byte
+		var isQuoted, isEscaped, nextShouldBeSeparator bool
+		var usedQuote byte
 
 		for ; i < len(line); i++ {
 			b := line[i]
 			isSpace := unicode.IsSpace(rune(b))
 
-			if areQouted[valueNumber] && !isQouted && isSpace {
-				// Qouted value with whitespace after the closing qoute.
+			if areQuoted[valueNumber] && !isQuoted && isSpace {
+				// Quoted value with whitespace after the closing quote.
 				continue
-			} else if nextShouldBeSeperator && !isSpace && b != seperator {
-				return "", "", fmt.Errorf("unexpected %q, expected the seperator %q",
-					string(b), string(seperator))
+			} else if nextShouldBeSeparator && !isSpace && b != separator {
+				return "", "", fmt.Errorf("unexpected %q, expected the separator %q",
+					string(b), string(separator))
 			} else if (b == doubleQuote || b == singleQuote) && !isEscaped {
-				if !isQouted {
-					isQouted = true
-					areQouted[valueNumber] = true
+				if !isQuoted {
+					isQuoted = true
+					areQuoted[valueNumber] = true
 					values[valueNumber] = []byte{}
-					usedQouted = b
+					usedQuote = b
 					continue
-				} else if b == usedQouted {
-					isQouted = false
-					usedQouted = nilQuote
+				} else if b == usedQuote {
+					isQuoted = false
+					usedQuote = nilQuote
 					if valueNumber == 0 {
-						nextShouldBeSeperator = true
+						nextShouldBeSeparator = true
 					}
 					continue
 				}
-			} else if b == commentStart && !isQouted && hasSeperator {
+			} else if b == commentStart && !isQuoted && hasSeparator {
 				break
 			} else if b == escape && !isEscaped {
 				isEscaped = true
 				continue
-			} else if b == seperator && valueNumber == 0 && !isQouted {
-				hasSeperator = true
+			} else if b == separator && valueNumber == 0 && !isQuoted {
+				hasSeparator = true
 				i++ // skip the separator in the next loop.
 				break
 			}
@@ -197,18 +197,18 @@ func parseKeyValue(line []byte) (key, value string, err error) {
 			values[valueNumber] = append(values[valueNumber], b)
 		}
 
-		if isQouted {
-			return "", "", errors.New("qoute not closed")
+		if isQuoted {
+			return "", "", errors.New("quote not closed")
 		}
 	}
 
-	if !hasSeperator {
+	if !hasSeparator {
 		return "", "", errors.New("no separator found")
 	}
 
-	// Only trim extra whitespace if the value weren't qouted.
+	// Only trim extra whitespace if the value weren't quoted.
 	for i := 0; i < len(values); i++ {
-		if !areQouted[i] {
+		if !areQuoted[i] {
 			values[i] = bytes.TrimSpace(values[i])
 		}
 	}
