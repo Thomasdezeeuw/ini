@@ -14,14 +14,15 @@ import (
 )
 
 const (
-	commentStart byte = ';'
-	separator    byte = '='
-	sectionStart byte = '['
-	sectionEnd   byte = ']'
-	escape       byte = '\\'
-	doubleQuote  byte = '"'
-	singleQuote  byte = '\''
-	nilQuote     byte = 0
+	commentStart1 byte = ';'
+	commentStart2 byte = '#'
+	separator     byte = '='
+	sectionStart  byte = '['
+	sectionEnd    byte = ']'
+	escape        byte = '\\'
+	doubleQuote   byte = '"'
+	singleQuote   byte = '\''
+	nilQuote      byte = 0
 )
 
 type parser struct {
@@ -54,22 +55,22 @@ func (p *parser) handleLine(line []byte) error {
 		return nil
 	}
 
-	switch line[0] {
-	case commentStart:
+	b := line[0]
+	if isCommentStart(b) {
 		return nil
-	case sectionStart:
+	} else if b == sectionStart {
 		sectionName, err := parseSection(line)
 		if err != nil {
 			return err
 		}
 		return p.updateSection(sectionName)
-	default:
-		key, value, err := parseKeyValue(line)
-		if err != nil {
-			return err
-		}
-		return p.addKeyValue(key, value)
 	}
+
+	key, value, err := parseKeyValue(line)
+	if err != nil {
+		return err
+	}
+	return p.addKeyValue(key, value)
 }
 
 func (p *parser) updateSection(sectionName string) error {
@@ -128,7 +129,7 @@ func parseSection(line []byte) (string, error) {
 			sectionEnded = true
 			end = i
 			continue
-		} else if b == commentStart && sectionEnded {
+		} else if isCommentStart(b) && sectionEnded {
 			break
 		} else if sectionEnded && !unicode.IsSpace(rune(b)) {
 			return "", fmt.Errorf("unexpected %q after section closed", string(b))
@@ -182,7 +183,7 @@ func parseKeyValue(line []byte) (key, value string, err error) {
 					}
 					continue
 				}
-			} else if b == commentStart && !isQuoted && hasSeparator {
+			} else if isCommentStart(b) && !isQuoted && hasSeparator {
 				break
 			} else if b == escape && !isEscaped {
 				isEscaped = true
@@ -219,4 +220,8 @@ func parseKeyValue(line []byte) (key, value string, err error) {
 		return "", "", errors.New("key can't be empty")
 	}
 	return key, value, nil
+}
+
+func isCommentStart(b byte) bool {
+	return b == commentStart1 || b == commentStart2
 }
