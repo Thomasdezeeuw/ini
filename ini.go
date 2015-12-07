@@ -110,6 +110,9 @@ func getSectionKeysAlpha(m Section) []string {
 	return keys
 }
 
+// todo: remove fieldCombo.
+// todo: check config.Decode.
+
 type fieldCombo struct {
 	value reflect.Value
 	field reflect.StructField
@@ -270,7 +273,7 @@ func possibleNames(name string) []string {
 	return names
 }
 
-// getNameParts splits a name on upper case and undersocres, it returns the
+// GetNameParts splits a name on upper case and underscores, it returns the
 // split parts.
 // todo: maybe split on first number?
 func getNameParts(name string) []string {
