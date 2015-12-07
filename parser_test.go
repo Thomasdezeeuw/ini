@@ -93,6 +93,8 @@ func TestParseKeyValueDoubleQoute(t *testing.T) {
 		{`"key"="" ;`, Config{Global: {"key": ""}}},
 		{`"key" = "";`, Config{Global: {"key": ""}}},
 		{`"key" = "" ;`, Config{Global: {"key": ""}}},
+		{`" key " = " value "`, Config{Global: {" key ": " value "}}}, // Keep whitespace.
+		{`"	key	" = "	value	"`, Config{Global: {"	key	": "	value	"}}},
 	}
 
 	if err := testParser(tests); err != nil {
@@ -143,6 +145,8 @@ func TestParseKeyValueSingleQoute(t *testing.T) {
 		{"'key'='' ;", Config{Global: {"key": ""}}},
 		{"'key' = '';", Config{Global: {"key": ""}}},
 		{"'key' = '' ;", Config{Global: {"key": ""}}},
+		{`' key ' = ' value '`, Config{Global: {" key ": " value "}}}, // Keep whitespace.
+		{`'	key	' = '	value	'`, Config{Global: {"	key	": "	value	"}}},
 	}
 
 	if err := testParser(tests); err != nil {

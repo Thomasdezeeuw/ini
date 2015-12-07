@@ -149,6 +149,7 @@ func parseSection(line []byte) (string, error) {
 
 func parseKeyValue(line []byte) (key, value string, err error) {
 	var values [2][]byte
+	var areQouted [2]bool
 	var hasSeperator bool
 
 	// Keep track of the byte number for both the key and value.
@@ -158,13 +159,19 @@ func parseKeyValue(line []byte) (key, value string, err error) {
 
 		for ; i < len(line); i++ {
 			b := line[i]
+			isSpace := unicode.IsSpace(rune(b))
 
-			if nextShouldBeSeperator && !unicode.IsSpace(rune(b)) && b != seperator {
+			if areQouted[valueNumber] && !isQouted && isSpace {
+				// Qouted value with whitespace after the closing qoute.
+				continue
+			} else if nextShouldBeSeperator && !isSpace && b != seperator {
 				return "", "", fmt.Errorf("unexpected %q, expected the seperator %q",
 					string(b), string(seperator))
 			} else if (b == doubleQuote || b == singleQuote) && !isEscaped {
 				if !isQouted {
 					isQouted = true
+					areQouted[valueNumber] = true
+					values[valueNumber] = []byte{}
 					usedQouted = b
 					continue
 				} else if b == usedQouted {
@@ -199,8 +206,15 @@ func parseKeyValue(line []byte) (key, value string, err error) {
 		return "", "", errors.New("no separator found")
 	}
 
-	key = string(bytes.TrimSpace(values[0]))
-	value = string(bytes.TrimSpace(values[1]))
+	// Only trim extra whitespace if the value weren't qouted.
+	for i := 0; i < len(values); i++ {
+		if !areQouted[i] {
+			values[i] = bytes.TrimSpace(values[i])
+		}
+	}
+
+	key = string(values[0])
+	value = string(values[1])
 	if len(key) == 0 {
 		return "", "", errors.New("key can't be empty")
 	}
