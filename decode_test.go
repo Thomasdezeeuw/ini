@@ -203,9 +203,12 @@ func TestConfigDecode(t *testing.T) {
 	}
 }
 
+type myInt uint32
+
 type smallTestData struct {
 	Key     string
 	Section smallSection
+	Mode    myInt
 }
 
 type smallSection struct {
@@ -214,7 +217,7 @@ type smallSection struct {
 
 func TestDecode(t *testing.T) {
 	t.Parallel()
-	content := "key = value\n[section]\nkey2=value2"
+	content := "key = value\nmode = 777\n[section]\nkey2=value2"
 
 	var got smallTestData
 	if err := Decode(strings.NewReader(content), &got); err != nil {
@@ -226,6 +229,7 @@ func TestDecode(t *testing.T) {
 		Section: smallSection{
 			Key2: "value2",
 		},
+		Mode: 777,
 	}
 
 	if !reflect.DeepEqual(got, expected) {

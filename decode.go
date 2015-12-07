@@ -17,20 +17,21 @@ var timeFormats = []string{"2006-01-02", "2006-01-02 15:04",
 	"2006-01-02 15:04:05", time.RFC3339, time.RFC1123, time.RFC822}
 
 var (
-	typeString   = reflect.TypeOf("")
-	typeBool     = reflect.TypeOf(true)
-	typeInt      = reflect.TypeOf(int(1))
-	typeInt8     = reflect.TypeOf(int8(1))
-	typeInt16    = reflect.TypeOf(int16(1))
-	typeInt32    = reflect.TypeOf(int32(1))
-	typeInt64    = reflect.TypeOf(int64(1))
-	typeUint     = reflect.TypeOf(uint(1))
-	typeUint8    = reflect.TypeOf(uint8(1))
-	typeUint16   = reflect.TypeOf(uint16(1))
-	typeUint32   = reflect.TypeOf(uint32(1))
-	typeUint64   = reflect.TypeOf(uint64(1))
-	typeFloat32  = reflect.TypeOf(float32(1.0))
-	typeFloat64  = reflect.TypeOf(float64(1.0))
+	kindString  = reflect.TypeOf("").Kind()
+	kindBool    = reflect.TypeOf(true).Kind()
+	kindInt     = reflect.TypeOf(int(1)).Kind()
+	kindInt8    = reflect.TypeOf(int8(1)).Kind()
+	kindInt16   = reflect.TypeOf(int16(1)).Kind()
+	kindInt32   = reflect.TypeOf(int32(1)).Kind()
+	kindInt64   = reflect.TypeOf(int64(1)).Kind()
+	kindUint    = reflect.TypeOf(uint(1)).Kind()
+	kindUint8   = reflect.TypeOf(uint8(1)).Kind()
+	kindUint16  = reflect.TypeOf(uint16(1)).Kind()
+	kindUint32  = reflect.TypeOf(uint32(1)).Kind()
+	kindUint64  = reflect.TypeOf(uint64(1)).Kind()
+	kindFloat32 = reflect.TypeOf(float32(1.0)).Kind()
+	kindFloat64 = reflect.TypeOf(float64(1.0)).Kind()
+
 	typeDuration = reflect.TypeOf(time.Nanosecond)
 	typeTime     = reflect.TypeOf(time.Time{})
 )
@@ -64,21 +65,25 @@ func setReflectValue(keyValue *reflect.Value, value string) error {
 		return setSlice(keyValue, value)
 	}
 
+	// Special time cases.
 	switch keyValue.Type() {
-	case typeString:
-		keyValue.SetString(value)
-	case typeBool:
-		return setBool(keyValue, value)
-	case typeInt, typeInt8, typeInt16, typeInt32, typeInt64:
-		return setInt(keyValue, value)
-	case typeUint, typeUint8, typeUint16, typeUint32, typeUint64:
-		return setUint(keyValue, value)
-	case typeFloat32, typeFloat64:
-		return setFloat(keyValue, value)
 	case typeDuration:
 		return setDuration(keyValue, value)
 	case typeTime:
 		return setTime(keyValue, value)
+	}
+
+	switch keyValue.Kind() {
+	case kindString:
+		keyValue.SetString(value)
+	case kindBool:
+		return setBool(keyValue, value)
+	case kindInt, kindInt8, kindInt16, kindInt32, kindInt64:
+		return setInt(keyValue, value)
+	case kindUint, kindUint8, kindUint16, kindUint32, kindUint64:
+		return setUint(keyValue, value)
+	case kindFloat32, kindFloat64:
+		return setFloat(keyValue, value)
 	}
 
 	return nil
@@ -88,40 +93,44 @@ func setReflectValue(keyValue *reflect.Value, value string) error {
 func setSlice(keyValue *reflect.Value, value string) error {
 	values := getValues(value)
 
-	// Type of the slice elements.
+	// Special time cases.
 	switch keyValue.Type().Elem() {
-	case typeString:
-		keyValue.Set(reflect.ValueOf(values))
-	case typeBool:
-		return setBools(keyValue, values)
-	case typeInt:
-		return setInts(keyValue, values)
-	case typeInt8:
-		return setInt8s(keyValue, values)
-	case typeInt16:
-		return setInt16s(keyValue, values)
-	case typeInt32:
-		return setInt32s(keyValue, values)
-	case typeInt64:
-		return setInt64s(keyValue, values)
-	case typeUint:
-		return setUints(keyValue, values)
-	case typeUint8:
-		return setUint8s(keyValue, values)
-	case typeUint16:
-		return setUint16s(keyValue, values)
-	case typeUint32:
-		return setUint32s(keyValue, values)
-	case typeUint64:
-		return setUint64s(keyValue, values)
-	case typeFloat32:
-		return setFloat32s(keyValue, values)
-	case typeFloat64:
-		return setFloat64s(keyValue, values)
 	case typeDuration:
 		return setDurations(keyValue, values)
 	case typeTime:
 		return setTimes(keyValue, values)
+	}
+
+	// Type of the slice elements.
+	switch keyValue.Type().Elem().Kind() {
+	case kindString:
+		keyValue.Set(reflect.ValueOf(values))
+	case kindBool:
+		return setBools(keyValue, values)
+	case kindInt:
+		return setInts(keyValue, values)
+	case kindInt8:
+		return setInt8s(keyValue, values)
+	case kindInt16:
+		return setInt16s(keyValue, values)
+	case kindInt32:
+		return setInt32s(keyValue, values)
+	case kindInt64:
+		return setInt64s(keyValue, values)
+	case kindUint:
+		return setUints(keyValue, values)
+	case kindUint8:
+		return setUint8s(keyValue, values)
+	case kindUint16:
+		return setUint16s(keyValue, values)
+	case kindUint32:
+		return setUint32s(keyValue, values)
+	case kindUint64:
+		return setUint64s(keyValue, values)
+	case kindFloat32:
+		return setFloat32s(keyValue, values)
+	case kindFloat64:
+		return setFloat64s(keyValue, values)
 	}
 
 	return nil
