@@ -212,8 +212,8 @@ func TestParseKeyValueMisc(t *testing.T) {
 		{`"=key"=value`, Config{Global: {"=key": "value"}}}, // Escaped qoutes.
 		{`"k\"ey"=value`, Config{Global: {`k"ey`: "value"}}},
 		{`key="val\"ue="`, Config{Global: {"key": `val"ue=`}}},
-
-		{"ke;y=value", Config{Global: {"ke;y": "value"}}}, // Misc.
+		{`"продавливания" = информации`, Config{Global: {"продавливания": `информации`}}}, // Issue #14.
+		{"ke;y=value", Config{Global: {"ke;y": "value"}}},                                 // Misc.
 		{"ke#y=value", Config{Global: {"ke#y": "value"}}},
 		{`k\\ey=val\\ue`, Config{Global: {`k\ey`: `val\ue`}}},
 		{`k\"ey=val\"ue`, Config{Global: {`k"ey`: `val"ue`}}},
@@ -293,10 +293,12 @@ func TestParseError(t *testing.T) {
 		{`"key"val=ue`, `ini: synthax error on line 1: unexpected "v", expected the separator "="`},
 		{`"key" "value"`, `ini: synthax error on line 1: unexpected "\"", expected the separator "="`},
 		{`"key" "2" = value`, `ini: synthax error on line 1: unexpected "\"", expected the separator "="`},
+		{`"продавливания" информации`, `ini: synthax error on line 1: unexpected "и", expected the separator "="`}, // Issue #14.
 		{"=value", "ini: synthax error on line 1: key can't be empty"},
 		{"[", "ini: synthax error on line 1: unclosed section"},
 		{"[section", `ini: synthax error on line 1: unclosed section`},
 		{"[section] something", "ini: synthax error on line 1: unexpected \"s\" after section closed"},
+		{"[section] информации", "ini: synthax error on line 1: unexpected \"и\" after section closed"},
 		{"[]", "ini: synthax error on line 1: section can't be empty"},
 		{"[ ]", "ini: synthax error on line 1: section can't be empty"},
 		{"[section]\n[section]", "ini: synthax error on line 2: section \"section\" already exists"},

@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"unicode"
+	"unicode/utf8"
 )
 
 const (
@@ -132,7 +133,8 @@ func parseSection(line []byte) (string, error) {
 		} else if isCommentStart(b) && sectionEnded {
 			break
 		} else if sectionEnded && !unicode.IsSpace(rune(b)) {
-			return "", fmt.Errorf("unexpected %q after section closed", string(b))
+			return "", fmt.Errorf("unexpected %q after section closed",
+				getFullRune(line[i:]))
 		}
 	}
 
@@ -167,7 +169,7 @@ func parseKeyValue(line []byte) (key, value string, err error) {
 				continue
 			} else if nextShouldBeSeparator && !isSpace && b != separator {
 				return "", "", fmt.Errorf("unexpected %q, expected the separator %q",
-					string(b), string(separator))
+					getFullRune(line[i:]), string(separator))
 			} else if (b == doubleQuote || b == singleQuote) && !isEscaped {
 				if !isQuoted {
 					isQuoted = true
@@ -220,6 +222,11 @@ func parseKeyValue(line []byte) (key, value string, err error) {
 		return "", "", errors.New("key can't be empty")
 	}
 	return key, value, nil
+}
+
+func getFullRune(line []byte) string {
+	r, _ := utf8.DecodeRune(line)
+	return string(r)
 }
 
 func isCommentStart(b byte) bool {
