@@ -28,7 +28,8 @@ $ go get github.com/Thomasdezeeuw/ini
 
 ## Examples
 
-See the `_examples` directory for a mulitple examples.
+See the [_examples](https://github.com/Thomasdezeeuw/ini/tree/master/_examples)
+directory for a mulitple examples.
 
 ## License
 
