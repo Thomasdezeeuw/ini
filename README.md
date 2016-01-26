@@ -33,4 +33,5 @@ directory for a mulitple examples.
 
 ## License
 
-Licensed under the MIT license, copyright (C) Thomas de Zeeuw.
+Licensed under the MIT license, copyright (C) Thomas de Zeeuw. See `LICENSE` for
+more information.
