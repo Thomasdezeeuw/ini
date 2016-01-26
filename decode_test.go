@@ -11,8 +11,6 @@ import (
 	"time"
 )
 
-// todo: test int/uint/float overflows.
-
 type completeTestData struct {
 	Str      string
 	Duration time.Duration

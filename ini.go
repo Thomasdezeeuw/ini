@@ -110,9 +110,6 @@ func getSectionKeysAlpha(m Section) []string {
 	return keys
 }
 
-// todo: remove fieldCombo.
-// todo: check config.Decode.
-
 type fieldCombo struct {
 	value reflect.Value
 	field reflect.StructField
