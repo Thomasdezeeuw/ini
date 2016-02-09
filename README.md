@@ -1,7 +1,7 @@
 # Ini
 
 [![GoDoc](https://godoc.org/github.com/Thomasdezeeuw/ini?status.svg)](https://godoc.org/github.com/Thomasdezeeuw/ini)
-[![Build Status](https://travis-ci.org/Thomasdezeeuw/ini.png?branch=master)](https://travis-ci.org/Thomasdezeeuw/ini)
+[![Build Status](https://img.shields.io/travis/Thomasdezeeuw/ini.svg)](https://travis-ci.org/Thomasdezeeuw/ini)
 [![Coverage Status](https://coveralls.io/repos/Thomasdezeeuw/ini/badge.svg?branch=master&service=github)](https://coveralls.io/github/Thomasdezeeuw/ini?branch=master)
 
 Ini is a [Go](https://golang.org/) package for for parsing ini (or cfg) files.
