@@ -99,7 +99,7 @@ func (p *parser) addKeyValue(key, value string) error {
 // Parse parses ini formatted input.
 //
 // Note: the reader already gets buffered, so there is no need to buffer it
-// youself.
+// yourself.
 func Parse(r io.Reader) (Config, error) {
 	p := newParser(r)
 	if err := p.parse(); err != nil {

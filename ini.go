@@ -134,7 +134,7 @@ type fieldCombo struct {
 //	"string1, string2" -> []string{"string1", "string2"}
 //	"1, 2, 3" -> []int{1, 2, 3}
 //
-// Booleans are supported aswell:
+// Booleans are supported as well:
 //
 //	"1, t, T, TRUE, true, True" -> true
 //	"0, f, F, FALSE, false, False" -> false
