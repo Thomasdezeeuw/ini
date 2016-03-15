@@ -229,7 +229,7 @@ func setInt(keyValue *reflect.Value, value string) error {
 	if err != nil {
 		return createCovertionError(value, keyValue.Kind().String())
 	}
-	n64 := int64(n)
+	n64 := n
 
 	if keyValue.OverflowInt(n64) {
 		return createOverflowError(value, keyValue.Kind().String())
@@ -309,7 +309,7 @@ func setUint(keyValue *reflect.Value, value string) error {
 	if err != nil {
 		return createCovertionError(value, keyValue.Kind().String())
 	}
-	nu64 := uint64(n)
+	nu64 := n
 
 	if keyValue.OverflowUint(nu64) {
 		return createOverflowError(value, keyValue.Kind().String())
