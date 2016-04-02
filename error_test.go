@@ -12,12 +12,12 @@ import (
 func TestSynthaxError(t *testing.T) {
 	t.Parallel()
 	regularError := errors.New("some error")
-	if got := IsSynthaxError(regularError); got != false {
+	if got := IsSynthaxError(regularError); got {
 		t.Fatalf("Expected IsSynthaxError(%v) to return false", regularError)
 	}
 
 	synthaxError := createSynthaxError(1, "error message")
-	if got := IsSynthaxError(synthaxError); got != true {
+	if got := IsSynthaxError(synthaxError); !got {
 		t.Fatalf("Expected IsSynthaxError(%v) to return true", synthaxError)
 	}
 
@@ -31,12 +31,12 @@ func TestSynthaxError(t *testing.T) {
 func TestOverflowError(t *testing.T) {
 	t.Parallel()
 	regularError := errors.New("some error")
-	if got := IsOverflowError(regularError); got != false {
+	if got := IsOverflowError(regularError); got {
 		t.Fatalf("Expected IsOverflowError(%v) to return false", regularError)
 	}
 
 	overflowError := createOverflowError("5000", "int8")
-	if got := IsOverflowError(overflowError); got != true {
+	if got := IsOverflowError(overflowError); !got {
 		t.Fatalf("Expected IsOverflowError(%v) to return true", overflowError)
 	}
 
@@ -50,12 +50,12 @@ func TestOverflowError(t *testing.T) {
 func TestCovertionError(t *testing.T) {
 	t.Parallel()
 	regularError := errors.New("some error")
-	if got := IsCovertionError(regularError); got != false {
+	if got := IsCovertionError(regularError); got {
 		t.Fatalf("Expected IsCovertionError(%v) to return false", regularError)
 	}
 
 	covertionError := createCovertionError("string", "int8")
-	if got := IsCovertionError(covertionError); got != true {
+	if got := IsCovertionError(covertionError); !got {
 		t.Fatalf("Expected IsCovertionError(%v) to return true", covertionError)
 	}
 
