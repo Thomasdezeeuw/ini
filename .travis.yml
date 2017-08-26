@@ -22,7 +22,7 @@ install:
 script:
   - gofmt -s -d *.go
   - go vet
-  - deadcode
+# - deadcode
 # - gocyclo -over 10 *.go
   - go test -race -v -covermode atomic -coverprofile coverage.out
   - goveralls -coverprofile coverage.out -service travis-ci -repotoken $COVERALLS_TOKEN || exit 0
