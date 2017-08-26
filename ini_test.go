@@ -81,10 +81,16 @@ func TestComplete(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	c.WriteTo(&buf)
+	_, err = c.WriteTo(&buf)
+	if err != nil {
+		t.Fatalf("Unexpected error writing to buffer: %q", err.Error())
+	}
 	got := buf.String()
 
 	c2, err := Parse(&buf)
+	if err != nil {
+		t.Fatalf("Unexpected error parsing buffer: %q", err.Error())
+	}
 	if !reflect.DeepEqual(c, c2) {
 		t.Fatalf("Expected %v, but got %v", c, c2)
 	}
