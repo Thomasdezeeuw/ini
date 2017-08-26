@@ -255,13 +255,13 @@ func possibleNames(name string) []string {
 	}
 
 	var names []string
-	for _, seperator := range separators {
+	for _, separator := range separators {
 		var newName string
 		for _, namePart := range nameParts {
 			newName += namePart
-			newName += seperator
+			newName += separator
 		}
-		newName = newName[:len(newName)-len(seperator)]
+		newName = newName[:len(newName)-len(separator)]
 
 		names = append(names, strings.ToLower(newName))
 		names = append(names, newName)

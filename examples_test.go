@@ -31,7 +31,7 @@ func ExampleParse() {
 	value := conf[Global]["key"]
 	fmt.Println("value:", value)
 
-	value, found := conf[Global]["unkown"]
+	value, found := conf[Global]["unknown"]
 	fmt.Println("found:", found)
 	fmt.Println("value:", value)
 	// Output:

@@ -31,7 +31,7 @@ $ go get github.com/Thomasdezeeuw/ini
 ## Examples
 
 See the [_examples](https://github.com/Thomasdezeeuw/ini/tree/master/_examples)
-directory for a mulitple examples.
+directory for a multiple examples.
 
 ## License
 
