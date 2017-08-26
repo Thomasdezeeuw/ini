@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2
+
+- Fixed various type-o's in documentation.
+- Renamed `IsSynthaxError` to `IsSyntaxError`.
+- Fixed type-o in syntax error message.
+
 ## v0.1
 
  - **Ignore goveralls errors in travis build** (#c57cb74) by *Thomas de Zeeuw*, on *02 Apr 2016 12:31:57 UTC*. <br/>
