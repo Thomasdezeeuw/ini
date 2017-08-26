@@ -273,35 +273,35 @@ func TestParseError(t *testing.T) {
 		content string
 		errMsg  string
 	}{
-		{"key=value\nkey=value2", `ini: synthax error on line 2: ` +
+		{"key=value\nkey=value2", `ini: syntax error on line 2: ` +
 			`key "key" already used in section "global"`},
-		{"=value", `ini: synthax error on line 1: key can't be empty`},
-		{`"key'=value`, `ini: synthax error on line 1: quote not closed`},
-		{`"key=value`, `ini: synthax error on line 1: quote not closed`},
-		{`'key"=value`, `ini: synthax error on line 1: quote not closed`},
-		{`'key=value`, `ini: synthax error on line 1: quote not closed`},
-		{`key="value'`, `ini: synthax error on line 1: quote not closed`},
-		{`key="value`, `ini: synthax error on line 1: quote not closed`},
-		{`key='value"`, `ini: synthax error on line 1: quote not closed`},
-		{`key='value`, `ini: synthax error on line 1: quote not closed`},
-		{"key", "ini: synthax error on line 1: no separator found"},
-		{"key ; comment", "ini: synthax error on line 1: no separator found"},
-		{"key # comment", "ini: synthax error on line 1: no separator found"},
-		{"key value", "ini: synthax error on line 1: no separator found"},
-		{`"key"`, `ini: synthax error on line 1: no separator found`},
-		{`"key"value`, `ini: synthax error on line 1: unexpected "v", expected the separator "="`},
-		{`"key"val=ue`, `ini: synthax error on line 1: unexpected "v", expected the separator "="`},
-		{`"key" "value"`, `ini: synthax error on line 1: unexpected "\"", expected the separator "="`},
-		{`"key" "2" = value`, `ini: synthax error on line 1: unexpected "\"", expected the separator "="`},
-		{`"продавливания" информации`, `ini: synthax error on line 1: unexpected "и", expected the separator "="`}, // Issue #14.
-		{"=value", "ini: synthax error on line 1: key can't be empty"},
-		{"[", "ini: synthax error on line 1: unclosed section"},
-		{"[section", `ini: synthax error on line 1: unclosed section`},
-		{"[section] something", "ini: synthax error on line 1: unexpected \"s\" after section closed"},
-		{"[section] информации", "ini: synthax error on line 1: unexpected \"и\" after section closed"},
-		{"[]", "ini: synthax error on line 1: section can't be empty"},
-		{"[ ]", "ini: synthax error on line 1: section can't be empty"},
-		{"[section]\n[section]", "ini: synthax error on line 2: section \"section\" already exists"},
+		{"=value", `ini: syntax error on line 1: key can't be empty`},
+		{`"key'=value`, `ini: syntax error on line 1: quote not closed`},
+		{`"key=value`, `ini: syntax error on line 1: quote not closed`},
+		{`'key"=value`, `ini: syntax error on line 1: quote not closed`},
+		{`'key=value`, `ini: syntax error on line 1: quote not closed`},
+		{`key="value'`, `ini: syntax error on line 1: quote not closed`},
+		{`key="value`, `ini: syntax error on line 1: quote not closed`},
+		{`key='value"`, `ini: syntax error on line 1: quote not closed`},
+		{`key='value`, `ini: syntax error on line 1: quote not closed`},
+		{"key", "ini: syntax error on line 1: no separator found"},
+		{"key ; comment", "ini: syntax error on line 1: no separator found"},
+		{"key # comment", "ini: syntax error on line 1: no separator found"},
+		{"key value", "ini: syntax error on line 1: no separator found"},
+		{`"key"`, `ini: syntax error on line 1: no separator found`},
+		{`"key"value`, `ini: syntax error on line 1: unexpected "v", expected the separator "="`},
+		{`"key"val=ue`, `ini: syntax error on line 1: unexpected "v", expected the separator "="`},
+		{`"key" "value"`, `ini: syntax error on line 1: unexpected "\"", expected the separator "="`},
+		{`"key" "2" = value`, `ini: syntax error on line 1: unexpected "\"", expected the separator "="`},
+		{`"продавливания" информации`, `ini: syntax error on line 1: unexpected "и", expected the separator "="`}, // Issue #14.
+		{"=value", "ini: syntax error on line 1: key can't be empty"},
+		{"[", "ini: syntax error on line 1: unclosed section"},
+		{"[section", `ini: syntax error on line 1: unclosed section`},
+		{"[section] something", "ini: syntax error on line 1: unexpected \"s\" after section closed"},
+		{"[section] информации", "ini: syntax error on line 1: unexpected \"и\" after section closed"},
+		{"[]", "ini: syntax error on line 1: section can't be empty"},
+		{"[ ]", "ini: syntax error on line 1: section can't be empty"},
+		{"[section]\n[section]", "ini: syntax error on line 2: section \"section\" already exists"},
 	}
 
 	for _, test := range tests {
@@ -314,8 +314,8 @@ func TestParseError(t *testing.T) {
 		if err.Error() != test.errMsg {
 			t.Fatalf("Expected Parse(%s) to return error: %q, but got %q",
 				test.content, test.errMsg, err.Error())
-		} else if !IsSynthaxError(err) {
-			t.Fatalf("Expected parseSection(%s) to return an synthax error, but it isn't",
+		} else if !IsSyntaxError(err) {
+			t.Fatalf("Expected parseSection(%s) to return an syntax error, but it isn't",
 				test.content)
 		}
 	}

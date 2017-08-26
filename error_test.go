@@ -9,22 +9,22 @@ import (
 	"testing"
 )
 
-func TestSynthaxError(t *testing.T) {
+func TestSyntaxError(t *testing.T) {
 	t.Parallel()
 	regularError := errors.New("some error")
-	if got := IsSynthaxError(regularError); got {
-		t.Fatalf("Expected IsSynthaxError(%v) to return false", regularError)
+	if got := IsSyntaxError(regularError); got {
+		t.Fatalf("Expected IsSyntaxError(%v) to return false", regularError)
 	}
 
-	synthaxError := createSynthaxError(1, "error message")
-	if got := IsSynthaxError(synthaxError); !got {
-		t.Fatalf("Expected IsSynthaxError(%v) to return true", synthaxError)
+	syntaxError := createSyntaxError(1, "error message")
+	if got := IsSyntaxError(syntaxError); !got {
+		t.Fatalf("Expected IsSyntaxError(%v) to return true", syntaxError)
 	}
 
-	expected := "ini: synthax error on line 1: error message"
-	if synthaxError.Error() != expected {
-		t.Fatalf("Expected the synthax error to be %q, but got %q",
-			expected, synthaxError.Error())
+	expected := "ini: syntax error on line 1: error message"
+	if syntaxError.Error() != expected {
+		t.Fatalf("Expected the syntax error to be %q, but got %q",
+			expected, syntaxError.Error())
 	}
 }
 

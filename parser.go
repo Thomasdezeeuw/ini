@@ -40,7 +40,7 @@ func (p *parser) parse() error {
 		currentlineNumber++
 
 		if err := p.handleLine(line); err != nil {
-			return createSynthaxError(currentlineNumber, err.Error())
+			return createSyntaxError(currentlineNumber, err.Error())
 		}
 	}
 

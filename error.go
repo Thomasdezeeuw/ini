@@ -6,13 +6,13 @@ package ini
 
 import "fmt"
 
-type synthaxError struct {
+type syntaxError struct {
 	LineNumber int
 	Message    string
 }
 
-func (err synthaxError) Error() string {
-	return fmt.Sprintf("ini: synthax error on line %d: %s",
+func (err syntaxError) Error() string {
+	return fmt.Sprintf("ini: syntax error on line %d: %s",
 		err.LineNumber, err.Message)
 }
 
@@ -35,8 +35,8 @@ func (err covertionError) Error() string {
 	return fmt.Sprintf("ini: can't convert '%s' to type %s", err.Value, err.Type)
 }
 
-func createSynthaxError(lineNumber int, msg string) error {
-	return synthaxError{
+func createSyntaxError(lineNumber int, msg string) error {
+	return syntaxError{
 		LineNumber: lineNumber,
 		Message:    msg,
 	}
@@ -56,9 +56,9 @@ func createCovertionError(value, t string) error {
 	}
 }
 
-// IsSynthaxError checks if an error is a synthax error.
-func IsSynthaxError(err error) bool {
-	_, ok := err.(synthaxError)
+// IsSyntaxError checks if an error is a syntax error.
+func IsSyntaxError(err error) bool {
+	_, ok := err.(syntaxError)
 	return ok
 }
 
